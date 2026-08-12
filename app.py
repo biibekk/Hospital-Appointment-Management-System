@@ -12,19 +12,32 @@ from repositories.patient_repo import PatientRepo
 
 from models.patient_model import PatientModel
 
-db_obj = DatabaseConnection("project_data.db")
+from helpers.display_help import display
+
+db_obj = DatabaseConnection("app.db")
 connection = db_obj.connection
 
-r_appointment = AppointmentsRepo(connection)
-r_doctor = DoctorRepo(connection)
-r_doctorschedule = DoctorScheduleRepo(connection)
-r_patient = PatientRepo(connection)
+appointment_r = AppointmentsRepo(connection)
+doctor_r = DoctorRepo(connection)
+doctorschedule_r = DoctorScheduleRepo(connection)
+patient_r = PatientRepo(connection)
 
-s_appointment = AppointmentsService(r_appointment)
-s_doctor = DoctorService(r_doctor)
-s_doctorschedule = DoctorScheduleService(r_doctorschedule)
-s_patient = PatientService(r_patient)
+appointment_s = AppointmentsService(appointment_r)
+doctor_s = DoctorService(doctor_r)
+doctorschedule_s = DoctorScheduleService(doctorschedule_r)
+patient_s = PatientService(patient_r)
 
 
-p = PatientModel("abcd","2004/1/1","male","1234","abcd",1)
-print(s_patient.register_patient(p))
+display("Patient Registration")
+def register_patient():
+    name = input("Enter your name: ")
+    dob = input("Enter your DOB(yyyy/mm/dd): ")
+    gender = input("Enter your gender(M/F): ")
+    contact = input("Enter your contact no: ")
+
+    return PatientModel(name,dob,gender,contact)
+
+
+p = register_patient()
+
+patient_s.register_patient(p)

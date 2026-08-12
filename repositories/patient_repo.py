@@ -3,20 +3,20 @@ class PatientRepo:
         self.connection = connection
         self.cursor = connection.cursor()
 
-    def patient_exists(self,patientid):
+    def patient_exists(self,patient):
         # query = "select * from patient where id = ?"
 
-        # self.cursor.execute(query,(patientid,))
+        # self.cursor.execute(query,(patient.patient_id,))
 
         # return self.cursor.fetchone()
 
-        return
+        return False
 
-    def register_patient(self,user):
-        query = """Insert into users(name,dob,gender)
-        values(?,?,?)"""
+    def register_patient(self,patient):
+        query = """Insert into patient(name,dob,gender,contact)
+        values(?,?,?,?)"""
 
         with self.connection:
-            self.cursor.execute(query,(user.name,user.dob,user.gender))
+            self.cursor.execute(query,(patient.name,patient.dob,patient.gender,patient.contact))
 
         return self.cursor.rowcount
