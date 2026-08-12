@@ -12,6 +12,7 @@ create table if not exists patient(
 create table if not exists doctor(
     doctor_id integer primary key autoincrement,
     name text not null,
+    contact text not null,
     specialisation text not null,
     consultation_fee integer default 1000
 );
@@ -48,6 +49,6 @@ create table if not exists appointments(
     foreign key(doctor_id) references doctor(doctor_id) on delete cascade
 );
 
-create unique index unique_active_appointment
+create unique index if not exists unique_active_appointment
 on appointments(doctor_id, date, start_time)
 where status != 'CANCELLED';

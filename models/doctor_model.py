@@ -1,7 +1,8 @@
 class DoctorModel:
-    def __init__(self,doctor_id,name,specialisation,fee):
+    def __init__(self,name,contact,specialisation,fee,doctor_id=None):
         self.doctor_id = doctor_id
         self.name = name
+        self.contact = contact
         self.specialisation = specialisation
         self.consultation_fee = fee
 

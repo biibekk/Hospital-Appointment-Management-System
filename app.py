@@ -11,6 +11,7 @@ from repositories.doctorschedule_repo import DoctorScheduleRepo
 from repositories.patient_repo import PatientRepo
 
 from models.patient_model import PatientModel
+from models.doctor_model import DoctorModel
 
 from helpers.display_help import display
 
@@ -28,8 +29,8 @@ doctorschedule_s = DoctorScheduleService(doctorschedule_r)
 patient_s = PatientService(patient_r)
 
 
-display("Patient Registration")
 def register_patient():
+    display("Patient Registration")
     name = input("Enter your name: ")
     dob = input("Enter your DOB(yyyy/mm/dd): ")
     gender = input("Enter your gender(M/F): ")
@@ -38,6 +39,19 @@ def register_patient():
     return PatientModel(name,dob,gender,contact)
 
 
-p = register_patient()
+# p = register_patient()
+# patient_s.register_patient(p)
 
-patient_s.register_patient(p)
+
+def add_doctor():
+    display("Add Doctor")
+    name = input("Enter your name: ")
+    contact = input("Enter contact no: ")
+    spec = input("Enter specialisation: ")
+    fee = input("Enter consultation fee: ")
+
+    return DoctorModel(name,contact,spec,fee)
+
+d = add_doctor()
+doctor_s.add_doctor(d)
+
