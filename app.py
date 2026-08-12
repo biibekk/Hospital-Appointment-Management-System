@@ -12,6 +12,7 @@ from repositories.patient_repo import PatientRepo
 
 from models.patient_model import PatientModel
 from models.doctor_model import DoctorModel
+from models.doctorschedule_model import DoctorSchedule
 
 from helpers.display_help import display
 
@@ -25,7 +26,7 @@ patient_r = PatientRepo(connection)
 
 appointment_s = AppointmentsService(appointment_r)
 doctor_s = DoctorService(doctor_r)
-doctorschedule_s = DoctorScheduleService(doctorschedule_r)
+doctorschedule_s = DoctorScheduleService(doctorschedule_r,doctor_r)
 patient_s = PatientService(patient_r)
 
 
@@ -52,6 +53,18 @@ def add_doctor():
 
     return DoctorModel(name,contact,spec,fee)
 
-d = add_doctor()
-doctor_s.add_doctor(d)
+# d = add_doctor()
+# doctor_s.add_doctor(d)
 
+
+def add_doctor_schedule():
+    display("Add Doctor Schedule")
+    doctor_id = input("Enter doctor id: ")
+    date = input("Enter date(yyyy/mm/dd): ")
+    start_time = input("Enter start time(hh:mm): ")
+    end_time = input("Enter end time(hh:mm): ")
+
+    return DoctorSchedule(doctor_id,date,start_time,end_time)
+
+ds = add_doctor_schedule()
+doctorschedule_s.add_doctor_schedule(ds)

@@ -1,5 +1,5 @@
 class DoctorSchedule:
-    def __init__(self,schedule_id,doctor_id,date,start_time,end_time,slot_duration):
+    def __init__(self,doctor_id,date,start_time,end_time,slot_duration=30,schedule_id=None):
         self.schedule_id = schedule_id
         self.doctor_id = doctor_id
         self.date = date

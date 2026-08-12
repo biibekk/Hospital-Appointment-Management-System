@@ -4,9 +4,14 @@ class DoctorRepo:
         self.cursor = connection.cursor()
 
     def doctor_exists(self,doctor):
-        query = "select * from doctor where name = ? and contact = ?"
+        query = "select * from doctor where doctor_id = ?"
+        args = (doctor.doctor_id,)
 
-        self.cursor.execute(query,(doctor.name,doctor.contact))
+        if doctor.doctor_id is None:
+            query = "select * from doctor where name = ? and contact = ?"
+            args = (doctor.name,doctor.contact)
+
+        self.cursor.execute(query,args)
 
         return self.cursor.fetchone()
 
@@ -14,6 +19,7 @@ class DoctorRepo:
         query = """insert into doctor(name,contact,specialisation,consultation_fee) 
         values(?,?,?,?)"""
 
-        self.cursor.execute(query,(doctor.name,doctor.contact,doctor.specialisation,doctor.consultation_fee))
+        with self.connection:
+            self.cursor.execute(query,(doctor.name,doctor.contact,doctor.specialisation,doctor.consultation_fee))
 
         return self.cursor.rowcount
