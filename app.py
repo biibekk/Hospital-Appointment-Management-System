@@ -66,5 +66,13 @@ def add_doctor_schedule():
 
     return DoctorSchedule(doctor_id,date,start_time,end_time)
 
-ds = add_doctor_schedule()
-doctorschedule_s.add_doctor_schedule(ds)
+# ds = add_doctor_schedule()
+# response = doctorschedule_s.add_doctor_schedule(ds)
+# display(response['message'])
+
+
+
+# CHECKING SQL ERROR CATCH AND LOGGING METHOD
+# print(doctor_r.add_error_check(1,"demo",1234,"demo",1000))     this is bypassing the service with direct call to repo
+# response = doctor_s.add_error_check(1,"demo",1234,"demo",1000)
+# display(response['message'])

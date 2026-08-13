@@ -8,7 +8,7 @@ import logging
 
 # dblogger.debug("demo")
 
-dbformatter = logging.Formatter(format='%(asctime)s %(name)s %(levelname) -8s [%(filename) s:%(lineno)d %(message)s]')
+dbformatter = logging.Formatter('%(asctime)s %(name)s %(levelname) -8s [%(filename) s:%(lineno)d %(message)s]',datefmt="%d-%m-%Y %H:%M:%S")
 
 dblogger = logging.getLogger('Database')
 dblogger.setLevel(logging.DEBUG)
