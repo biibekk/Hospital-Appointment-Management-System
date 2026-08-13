@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from database.dbconnection import DatabaseConnection
 
 from services.appointments_service import AppointmentsService
@@ -40,10 +42,6 @@ def register_patient():
     return PatientModel(name,dob,gender,contact)
 
 
-# p = register_patient()
-# patient_s.register_patient(p)
-
-
 def add_doctor():
     display("Add Doctor")
     name = input("Enter your name: ")
@@ -53,8 +51,6 @@ def add_doctor():
 
     return DoctorModel(name,contact,spec,fee)
 
-# d = add_doctor()
-# doctor_s.add_doctor(d)
 
 
 def add_doctor_schedule():
@@ -71,8 +67,163 @@ def add_doctor_schedule():
 # display(response['message'])
 
 
-
 # CHECKING SQL ERROR CATCH AND LOGGING METHOD
 # print(doctor_r.add_error_check(1,"demo",1234,"demo",1000))     this is bypassing the service with direct call to repo
 # response = doctor_s.add_error_check(1,"demo",1234,"demo",1000)
 # display(response['message'])
+
+
+menu_prompt = f"""\n{'-'*32}
+Hospital Appointment System
+{'-'*32}
+1. Hospita Admin
+2. Doctor
+3. Patient
+4. Quit
+Enter your choice: """
+
+patient_prompt = f"""\n{'-'*18}
+Patient Menu
+{'-'*18}
+1. Register Patient
+2. Book Appointment
+3. Cancel Appointment
+4. Reschedule Appointment
+5. Check Appointment Status
+6. View Appointment History
+7. Go Back
+Enter your choice: """
+
+hospital_services = {1:'General Physician', 2:'Dermatology', 3:'Cardiology', 4:'Orthopedics', 5:'Pediatrics', 6:'Surgeon'}
+hostpital_services_list = "\n".join([f"{key}. {val}" for key,val in hospital_services.items()])
+max_choice = len(hospital_services) + 1
+
+
+service_prompt = f"""\n{'-'*19}
+Select Service
+{'-'*19}
+{hostpital_services_list}
+{max_choice}. Cancel
+Enter your choice: """
+
+doctor_prompt = """\n-----------------
+Select Doctor
+-----------------
+
+Doctor Id       Name
+{doctors}
+
+Enter Doctor Id: """
+
+date_prompt = f"""\n{'-'*15}
+Select Date
+{'-'*15}
+Enter date(yyyy/mm/dd): """
+
+
+def get_doctor_for_date():
+    pass
+
+def book_appointment():
+    # select hospital service
+    selected_service = None
+    while True:
+        try:
+            service_input = int(input(service_prompt))
+            if 1 <= service_input <= max_choice:
+                if service_input == max_choice: return
+                selected_service = hospital_services[service_input]
+                break
+            else:
+                display(f"Error: Please enter a number between 1 and {max_choice}.")
+        except ValueError as e:
+            display("Error: Invalid input! Please enter a whole number")
+
+    result = doctor_s.get_doctors_from_service(selected_service)
+    if(not result['success']): 
+        display(result['message'])
+        return
+
+    # select doctor
+    selected_doctor = None
+
+    doctor_ids = [t[0] for t in result['data']]
+    doctors_list = '\n'.join([f"{t[0]:<15} {t[1]}" for t in result['data']])
+
+    while True:
+        try:
+            doctor_input = int(input(doctor_prompt.format(doctors = doctors_list)))
+
+            if doctor_input in doctor_ids:
+                selected_doctor = doctor_input
+                break
+            else:
+                display("Error: Please enter doctor id from above options: ")
+
+        except ValueError:
+            display("Error: Invalid input! Please enter a whole number")
+
+
+    # date selection
+    selected_date = None
+    while True:
+        date_input = input(date_prompt).strip()
+        try:
+            # Validates format AND checks if date exists on calendar
+            # string -> datetime -> date
+            selected_date = datetime.strptime(date_input,"%Y/%m/%d").date()
+
+            if selected_date < datetime.now().date():
+                display("Error: Date must be greater than today.\n")
+                continue
+
+            break
+        except ValueError:
+            display("Error: Invalid date format or non-existent date! Please use YYYY/MM/DD.\n")
+
+    print(selected_date)    
+
+
+def patient_menu():
+    patient_input = input(patient_prompt).strip()
+    while(len(patient_input)==0):
+        display("Input cannot be empty. Try Again")
+        patient_input = input(patient_prompt).strip()
+
+    while patient_input != '7':
+        if patient_input == '1':
+            patient_obj = register_patient()
+            res = patient_s.register_patient(patient_obj)
+            display(res['message'])
+
+        elif patient_input == '2':
+            book_appointment()
+        elif patient_input == '3':
+            patient_menu()
+        elif patient_input == '7':
+            break
+        else:
+            display("Please enter a valid input.")
+        patient_input = input(patient_prompt)
+    
+
+def main():
+    user_input = input(menu_prompt).strip()
+    while len(user_input)==0:
+        display("Input cannot be empty. Try Again")
+        user_input = input(menu_prompt).strip()
+
+    while user_input != '4':
+        if user_input == '1':
+            pass
+        elif user_input == '2':
+            pass
+        elif user_input == '3':
+            patient_menu()
+        elif user_input == '4':
+            break
+        else:
+            display("Please enter a valid input.")
+        user_input = input(menu_prompt)
+
+main()
