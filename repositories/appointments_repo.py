@@ -53,3 +53,19 @@ class AppointmentsRepo:
             self.cursor.execute(query,args)
 
         return self.cursor.rowcount
+
+    def view_appointment_history(self,patient_id):
+        query = """select * from appointments
+        where patient_id = ?"""
+
+        with self.connection:
+            self.cursor.execute(query,(patient_id,))
+
+        rows = self.cursor.fetchall()
+
+        all_appointments = []
+
+        for row in rows:
+            all_appointments.append(AppointmentsModel(*row))
+
+        return None if rows is None else all_appointments

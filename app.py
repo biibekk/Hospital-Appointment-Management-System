@@ -106,7 +106,7 @@ patient_prompt = f"""\n{'-'*23}
 2. Book Appointment
 3. Cancel Appointment
 4. Reschedule Appointment
-5. Check Appointment Status
+5. Get Appointment Status
 6. View Appointment History
 7. Go Back
 Enter your choice: """
@@ -373,7 +373,8 @@ def reschedule_appointment():
     if not res['success']:
         display(res['message'])
         return
-    else: 
+    else:
+        res['data'].display_header()
         print(res['data'])
         selected_doctor = res['data'].doctor_id
 
@@ -431,7 +432,51 @@ def reschedule_appointment():
     # maybe ask final confirmation [Y/N]
     result = appointment_s.reschedule_appointment(selected_date,selected_slot[0],selected_slot[1],selected_app_id)
     display(result['message'])
-    
+
+
+def get_appointment_status():
+    selected_app_id = None
+    while True:
+        try:
+            app_id_input = int(input("\nEnter Appointment ID: "))
+            selected_app_id = app_id_input
+            break
+        except ValueError:
+            display("Error: Invalid input! Please enter a whole number")
+
+    res = appointment_s.get_appointment_details(selected_app_id)
+    selected_doctor = None
+    if not res['success']:
+        display(res['message'])
+        return
+    else: 
+        status = res['data'].status
+        date = res['data'].date
+        start_time,end_time = res['data'].start_time, res['data'].end_time
+        message = f"""Your appointment is {status}.
+     Date: {date}
+     Slot: {start_time} - {end_time}"""
+        display(message)
+
+
+def view_appointment_history():
+    selected_patient_id = None
+    while True:
+        try:
+            patient_id_input = int(input("\nEnter Patient ID: "))
+            selected_patient_id = patient_id_input
+            break
+        except ValueError:
+            display("Error: Invalid input! Please enter a whole number")
+
+    result = appointment_s.view_appointment_history(selected_patient_id)
+    if not result['success']:
+        display(result['message'])
+        return
+    display(f"Appointments History of Patient {selected_patient_id}")
+    result['data'][0].display_header()    # header for table display from AppointmentsModel
+    for appo in result['data']:
+        print(appo)
 
 def patient_menu():
     patient_input = input(patient_prompt).strip()
@@ -451,6 +496,10 @@ def patient_menu():
             cancel_appointment()
         elif patient_input == '4':
             reschedule_appointment()
+        elif patient_input == '5':
+            get_appointment_status()
+        elif patient_input == '6':
+            view_appointment_history()
         elif patient_input == '7':
             break
         else:

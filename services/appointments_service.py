@@ -61,3 +61,14 @@ class AppointmentsService:
         except sqlite3.Error as e:
             dblogger.error(f"Database Error: {e}")
             return {'success': False,'message': "Unable to reschedule appointment. Please try again."}
+
+    def view_appointment_history(self,patient_id):
+        # patient registers and i have his id which is passed here so no need to verify if patient exists
+        try:
+            all_appointments = self.appo_repo.view_appointment_history(patient_id)
+            message = f"No Appointments exists for patient {patient_id}." if all_appointments is None else \
+                "Appointments history fetched successfully,"
+            return {'success':True, 'message':message,'data':all_appointments}
+        except sqlite3.Error as e:
+            dblogger.error(f"Database Error: {e}")
+            return {'success': False,'message': "Unable to fetch appointments history. Please try again."}

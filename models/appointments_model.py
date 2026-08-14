@@ -13,6 +13,19 @@ class AppointmentsModel:
 
 
     def __str__(self):
+        return (
+            f"{self.appointment_id:<20}"
+            f"{self.patient_id:<12}"
+            f"{self.doctor_id:<12}"
+            f"{self.date:<15}"
+            f"{self.start_time:<12}"
+            f"{self.end_time:<12}"
+            f"{self.status:<12}"
+            f"{self.priority:<10}"
+            f"{self.appointment_cost:<18}"
+            f"{self.problem_description:<30}"
+        )
+    def display_header(self):
         print(
             f"{'Appointment ID':<20}"
             f"{'Patient ID':<12}"
@@ -27,16 +40,3 @@ class AppointmentsModel:
         )
 
         print("-" * 136)
-        return (
-            f"{self.appointment_id:<20}"
-            f"{self.patient_id:<12}"
-            f"{self.doctor_id:<12}"
-            f"{self.date:<15}"
-            f"{self.start_time:<12}"
-            f"{self.end_time:<12}"
-            f"{self.status:<12}"
-            f"{self.priority:<10}"
-            f"{self.appointment_cost:<18}"
-            f"{self.problem_description:<30}"
-        )
-    
