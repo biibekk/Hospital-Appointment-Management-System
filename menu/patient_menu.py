@@ -31,6 +31,7 @@ class PatientMenu():
         self.doctorschedule_s = doctorschedule_s
         self.patient_s = patient_s
 
+
     def register_patient(self):
         display("Patient Registration")
         name = Validators.get_non_empty_string("Enter your name: ")
@@ -45,35 +46,30 @@ class PatientMenu():
             display(f"""Your Patient ID is {result['data']}.
      Please remember this id for future reference.""")
 
+
     def get_doctors_free_slots(self,doctor_id,date):
         doctor_day_slots = self.doctorschedule_s.get_doctor_slots(doctor_id,date)
 
         return self.appointment_s.get_doctors_free_slots(doctor_day_slots,doctor_id,date)
 
+
     def book_appointment(self):
         # get patient id, for now - need to work on registration
         selected_id = Validators.get_int(Prompts.patient_id)
         
-
         # select hospital service
         selected_service_number = Validators.get_choice(service_prompt,1,max_choice)
         if selected_service_number == max_choice: return
         selected_service = hospital_services[selected_service_number]
 
         result = self.doctor_s.get_doctors_from_service(selected_service)
+
         if(not result['success']): 
             display(result['message'])
             return
 
         # select doctor
-
-        # move this to service
-        # doctors_data = {t[0]:(t[1],t[2]) for t in result['data']}
-        # doctor_ids = [t[0] for t in result['data']]
-        # doctor_choices = '\n'.join([f"{t[0]:<15} {t[1]:<25} {t[2]}" for t in result['data']])
-
         doctors_data,doctor_ids,doctors_choices = result['data']
-
         selected_doctor = Validators.get_choice_from_list(Prompts.doctor.format(doctors = doctors_choices),doctor_ids,"doctor")
         appointment_cost = doctors_data[selected_doctor][1]
 
@@ -83,11 +79,6 @@ class PatientMenu():
 
         # SLOT selection
         # all day slots(schedule) - booked slots(appointments)
-
-        # slots = self.doctorschedule_s.get_doctor_slots(selected_doctor,selected_date)
-        # busy_slots =self.appointment_s.get_booked_doctor_slots(selected_doctor,selected_date)
-        # free_slots = [slot for slot in slots if slot not in busy_slots]
-        # slot_choices = '\n'.join([f"{ind:<8} {val[0]:<11} {val[1]}" for ind,val in enumerate(free_slots, start=1)])
 
         free_slots,slot_choices = self.get_doctors_free_slots(selected_doctor,selected_date)
         max_slot_choice = len(free_slots)
@@ -107,19 +98,19 @@ class PatientMenu():
 
         appointment_obj = AppointmentsModel(None,selected_id,selected_doctor,selected_date,selected_slot[0],selected_slot[1],"BOOKED",selected_priority,appointment_cost,problem_desc)
 
-        # print(appointment_obj)
-
         res = self.appointment_s.book_appointment(appointment_obj)
         display(res['message'])
         if res['success']:
             display(f"""Your Appointment ID is {res['data']}.
      Please remember this id for future reference.""")
-        
+
+
     def cancel_appointment(self):
         selected_app_id = Validators.get_int("\nEnter Appointment ID: ")
 
         res = self.appointment_s.cancel_appointment(selected_app_id)
         display(res['message'])
+
 
     def reschedule_appointment(self):
         selected_app_id = Validators.get_int("\nEnter Appointment ID: ")

@@ -7,6 +7,7 @@ class DoctorService:
     def __init__(self,doctor_repo: DoctorRepo):
         self.doctor_repo = doctor_repo
 
+
     def add_doctor(self,doctor):
         try:
             if self.doctor_repo.doctor_exists(doctor):
@@ -21,12 +22,14 @@ class DoctorService:
             dblogger.error(f"Database error: {e}")
             return {'success': False,'message': "Unable to add doctor schedule. Please try again."}
 
+
     def add_error_check(self,*args):
         try:
             self.doctor_repo.add_error_check(*args)
         except sqlite3.Error as e:
             dblogger.error(f"Database error: {e}")
             return {'success': False,'message': "Unable to add doctor schedule. Please try again."}
+
 
     def get_doctors_from_service(self,service):
         try:

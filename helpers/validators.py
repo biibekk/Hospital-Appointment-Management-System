@@ -1,4 +1,5 @@
 from datetime import datetime
+import re
 
 from helpers.display_help import display
 
@@ -124,3 +125,17 @@ class Validators:
                 display(f"Error: Contact must be exactly {length} digits only.")
                 continue
             return value
+
+    def get_time(prompt):
+        while True:
+            value = input(prompt)
+            if not re.fullmatch(r"\d{2}:\d{2}", value):
+                display("Please enter time as HH:MM, e.g. 01:00 or 13:00")
+                continue
+
+            try:
+                time_obj = datetime.strptime(value,"%H:%M").time()
+                return time_obj.strftime("%H:%M")
+
+            except ValueError:
+                display("Invalid time. Please use valid 24-hour(HH:MM) time.")

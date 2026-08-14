@@ -10,6 +10,7 @@ from models.doctor_model import DoctorModel
 from models.doctorschedule_model import DoctorSchedule
 
 from helpers.display_help import display
+from helpers.validators import Validators
 
 admin_prompt = f"""\n{'-'*29}
      Hospital Admin Menu
@@ -31,49 +32,49 @@ class HospitalAdminMenu:
 
     def add_doctor(self):
         display("Add Doctor")
-        name = input("Enter your name: ")
-        contact = input("Enter contact no: ")
-        spec = input("Enter specialisation: ")
-        fee = input("Enter consultation fee: ")
+        name = Validators.get_non_empty_string("Enter your name: ")
+        contact = Validators.get_contact("Enter contact no: ",10)
+        spec = Validators.get_non_empty_string("Enter specialisation: ")
+        fee = Validators.get_int("Enter consultation fee: ")
 
-        return DoctorModel(name,contact,spec,fee)
+        new_doctor = DoctorModel(name,contact,spec,fee)
+        result = self.doctor_s.add_doctor(new_doctor)
+        display(result['message'])
 
 
     def add_doctor_schedule(self):
         display("Add Doctor Schedule")
-        doctor_id = input("Enter doctor id: ")
-        date = input("Enter date(yyyy-mm-dd): ").strip()
-        date = datetime.strptime(date,"%Y-%m-%d").date()
-        start_time = None
-        while True:
-            time_input = input("Enter start time(24 Hour - HH:MM): ")
-            if not re.fullmatch(r"\d{2}:\d{2}", time_input):
-                display("Please enter time as HH:MM, e.g. 01:00 or 13:00")
-                continue
+        doctor_id = Validators.get_int("Enter Doctor ID: ")
+        date = Validators.get_future_date("Enter schedule date(yyyy-mm-dd): ")
 
-            try:
-                time_obj = datetime.strptime(time_input,"%H:%M").time()
-                start_time = time_obj.strftime("%H:%M")
-                break
+        start_time = Validators.get_time("Enter start time(24 Hour - HH:MM): ")
+        # while True:
+        #     time_input = input("Enter start time(24 Hour - HH:MM): ")
+        #     if not re.fullmatch(r"\d{2}:\d{2}", time_input):
+        #         display("Please enter time as HH:MM, e.g. 01:00 or 13:00")
+        #         continue
 
-            except ValueError:
-                display("Invalid time. Please use HH:MM.")
+        #     try:
+        #         time_obj = datetime.strptime(time_input,"%H:%M").time()
+        #         start_time = time_obj.strftime("%H:%M")
+        #         break
 
-        end_time = input("Enter end time(hh:mm): ")
+        #     except ValueError:
+        #         display("Invalid time. Please use HH:MM.")
 
-        return DoctorSchedule(doctor_id,date,start_time,end_time)
+        end_time = Validators.get_time("Enter end time(24 Hour - HH:MM): ")
+
+        new_doctor_schedule = DoctorSchedule(doctor_id,date,start_time,end_time)
+        result = self.doctorschedule_s.add_doctor_schedule(new_doctor_schedule)
+        display(result['message'])
         
     def hospital_admin_menu(self):
         admin_input = input(admin_prompt)
         while admin_input != '5':
             if admin_input == '1':
-                new_doctor = self.add_doctor()
-                res = self.doctor_s.add_doctor(new_doctor)
-                display(res['message'])
+                self.add_doctor()
             elif admin_input == '2':
-                new_doctor_schedule = self.add_doctor_schedule()
-                res = self.doctorschedule_s.add_doctor_schedule(new_doctor_schedule)
-                display(res['message'])
+                self.add_doctor_schedule()
             elif admin_input == '5':
                 break
             else:
