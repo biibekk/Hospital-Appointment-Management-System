@@ -1,3 +1,5 @@
+from models.appointments_model import AppointmentsModel
+
 class AppointmentsRepo:
     def __init__(self,connection):
         self.connection = connection
@@ -22,3 +24,32 @@ class AppointmentsRepo:
             self.cursor.execute(query,args)
 
         return self.cursor.lastrowid
+
+    def cancel_appointment(self,appointment_id):
+        query = """delete from appointments
+        where appointment_id = ?"""
+
+        with self.connection:
+            self.cursor.execute(query,(appointment_id,))
+
+        return self.cursor.rowcount
+
+    def get_appointment_details(self,appointment_id):
+        query = """select * from appointments
+        where appointment_id = ?"""
+
+        with self.connection:
+            self.cursor.execute(query,(appointment_id,))
+
+        result = self.cursor.fetchone()
+        return None if result is None else AppointmentsModel(*result)
+
+    def reschedule_appointment(self,*args):
+        query = """update appointments
+        set date = ?, start_time = ?, end_time = ?
+        where appointment_id = ?"""
+
+        with self.connection:
+            self.cursor.execute(query,args)
+
+        return self.cursor.rowcount

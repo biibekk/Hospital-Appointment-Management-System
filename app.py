@@ -279,11 +279,9 @@ def book_appointment():
     # get slots for doctor on that date, doctor schedule to find all slots then appointments on that day for subtraction
 
     slots = doctorschedule_s.get_doctor_slots(selected_doctor,selected_date)
-    print(slots)
 
     # get busy slots of doctor from appointments on that day
     busy_slots = appointment_s.get_booked_doctor_slots(selected_doctor,selected_date)
-    print(busy_slots)
 
     free_slots = [slot for slot in slots if slot not in busy_slots]
     slot_choices = '\n'.join([f"{ind:<8} {val[0]:<11} {val[1]}" for ind,val in enumerate(free_slots, start=1)])
@@ -305,8 +303,6 @@ def book_appointment():
 
         except ValueError:
             display("Error: Invalid input! Please enter a whole number")
-
-
 
     # priority selection
     selected_priority = None
@@ -346,9 +342,96 @@ def book_appointment():
     display(res['message'])
     if res['success']:
         display(f"""Your Appointment ID is {res['data']}.
-        Please remember this id for future reference.""")
+     Please remember this id for future reference.""")
         # display("Please remember this id for future reference.")
+    
+def cancel_appointment():
+    selected_app_id = None
+    while True:
+        try:
+            app_id_input = int(input("\nEnter Appointment ID: "))
+            selected_app_id = app_id_input
+            break
+        except ValueError:
+            display("Error: Invalid input! Please enter a whole number")
 
+    res = appointment_s.cancel_appointment(selected_app_id)
+    display(res['message'])
+
+def reschedule_appointment():
+    selected_app_id = None
+    while True:
+        try:
+            app_id_input = int(input("\nEnter Appointment ID: "))
+            selected_app_id = app_id_input
+            break
+        except ValueError:
+            display("Error: Invalid input! Please enter a whole number")
+
+    res = appointment_s.get_appointment_details(selected_app_id)
+    selected_doctor = None
+    if not res['success']:
+        display(res['message'])
+        return
+    else: 
+        print(res['data'])
+        selected_doctor = res['data'].doctor_id
+
+    # date selection
+    selected_date = None
+    while True:
+        date_input = input(date_prompt).strip()
+        try:
+            # Validates format AND checks if date exists on calendar
+            # string -> datetime -> date
+            selected_date = datetime.strptime(date_input,"%Y-%m-%d").date()
+
+            if selected_date < datetime.now().date():
+                display("Error: Date must be greater than today.\n")
+                continue
+
+            break
+        except ValueError:
+            display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.\n")
+
+    # print(selected_date)  # datetime.date
+    selected_date = selected_date.strftime("%Y-%m-%d")
+    # print(type(selected_date))
+
+
+    # slot selection
+    # get slots for doctor on that date, doctor schedule to find all slots then appointments on that day for subtraction
+
+    slots = doctorschedule_s.get_doctor_slots(selected_doctor,selected_date)
+
+    # get busy slots of doctor from appointments on that day
+    busy_slots = appointment_s.get_booked_doctor_slots(selected_doctor,selected_date)
+
+    free_slots = [slot for slot in slots if slot not in busy_slots]
+    slot_choices = '\n'.join([f"{ind:<8} {val[0]:<11} {val[1]}" for ind,val in enumerate(free_slots, start=1)])
+    max_slot_choice = len(free_slots)
+
+    if len(free_slots) == 0:
+        display(f"No slots available on {selected_date}. Please Try Again.")
+        # here it will return to function that called it
+    
+    selected_slot = None
+    while True:
+        try:
+            slot_input = int(input(slot_prompt.format(slots = slot_choices)))
+            if 1 <= slot_input <= max_slot_choice:
+                selected_slot = free_slots[slot_input-1]
+                break
+            else:
+                display(f"Error: Please enter a number between 1 and {max_slot_choice}.")
+
+        except ValueError:
+            display("Error: Invalid input! Please enter a whole number")
+
+    # maybe ask final confirmation [Y/N]
+    result = appointment_s.reschedule_appointment(selected_date,selected_slot[0],selected_slot[1],selected_app_id)
+    display(result['message'])
+    
 
 def patient_menu():
     patient_input = input(patient_prompt).strip()
@@ -365,7 +448,9 @@ def patient_menu():
         elif patient_input == '2':
             book_appointment()
         elif patient_input == '3':
-            patient_menu()
+            cancel_appointment()
+        elif patient_input == '4':
+            reschedule_appointment()
         elif patient_input == '7':
             break
         else:

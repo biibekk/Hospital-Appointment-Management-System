@@ -13,7 +13,30 @@ class AppointmentsModel:
 
 
     def __str__(self):
-        return f"<Appointment id='{self.appointment_id} doctorId='{self.doctor_id} patientId='{self.patient_id}'>"
-        # return f"<Appointment id='{self.appointment_id} doctorId='{self.doctor_id} 'date='{self.date}' time='{self.start_time}'>"
+        print(
+            f"{'Appointment ID':<20}"
+            f"{'Patient ID':<12}"
+            f"{'Doctor ID':<12}"
+            f"{'Date':<15}"
+            f"{'Start':<12}"
+            f"{'End':<12}"
+            f"{'Status':<12}"
+            f"{'Priority':<10}"
+            f"{'Cost':<18}"
+            f"{'Problem':<30}"
+        )
 
+        print("-" * 136)
+        return (
+            f"{self.appointment_id:<20}"
+            f"{self.patient_id:<12}"
+            f"{self.doctor_id:<12}"
+            f"{self.date:<15}"
+            f"{self.start_time:<12}"
+            f"{self.end_time:<12}"
+            f"{self.status:<12}"
+            f"{self.priority:<10}"
+            f"{self.appointment_cost:<18}"
+            f"{self.problem_description:<30}"
+        )
     
