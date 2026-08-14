@@ -16,6 +16,7 @@ from repositories.patient_repo import PatientRepo
 from models.patient_model import PatientModel
 from models.doctor_model import DoctorModel
 from models.doctorschedule_model import DoctorSchedule
+from models.appointments_model import AppointmentsModel
 
 from helpers.display_help import display
 
@@ -125,6 +126,11 @@ hostpital_services_list = "\n".join([f"{key}. {val}" for key,val in hospital_ser
 max_choice = len(hospital_services) + 1
 
 
+patient_id_prompt = f"""{'-'*20}
+     Patient ID
+{'-'*20}
+Enter Patient ID no: """
+
 service_prompt = f"""\n{'-'*24}
      Select Service
 {'-'*24}
@@ -136,7 +142,7 @@ doctor_prompt = """\n---------------------
      Select Doctor
 ----------------------
 
-Doctor Id       Name
+Doctor Id       Name                     Consultation Fee
 {doctors}
 
 Enter Doctor Id: """
@@ -155,6 +161,19 @@ S.No.  Start Time   End Time
 
 Enter Slot No: """
 
+
+priority_prompt = f"""\n{'-'*24}
+     Select Priority
+{'-'*24}
+1. Emergency
+2. Normal
+Enter your choice:"""
+
+
+problem_des_prompt = f"""\n{'-'*28}
+     Problem Description
+{'-'*28}
+Describe your problem in few words: """
 
 def hospital_admin_menu():
     admin_input = input(admin_prompt)
@@ -177,6 +196,20 @@ def get_doctor_for_date():
     pass
 
 def book_appointment():
+    # get patient id, for now - need to work on registration
+    selected_id = None
+    while True:
+        try:
+            id_input = int(input(patient_id_prompt))
+
+            # need to add id validation or something
+            selected_id = id_input
+            break
+
+        except ValueError:
+            display("Error: Invalid input! Please enter a whole number")
+    
+
     # select hospital service
     selected_service = None
     while True:
@@ -198,9 +231,12 @@ def book_appointment():
 
     # select doctor
     selected_doctor = None
+    appointment_cost = None
 
+    # move this to service
+    doctors_data = {t[0]:(t[1],t[2]) for t in result['data']}
     doctor_ids = [t[0] for t in result['data']]
-    doctors_list = '\n'.join([f"{t[0]:<15} {t[1]}" for t in result['data']])
+    doctors_list = '\n'.join([f"{t[0]:<15} {t[1]:<25} {t[2]}" for t in result['data']])
 
     while True:
         try:
@@ -208,6 +244,7 @@ def book_appointment():
 
             if doctor_input in doctor_ids:
                 selected_doctor = doctor_input
+                appointment_cost = doctors_data[selected_doctor][1]
                 break
             else:
                 display("Error: Please enter doctor id from above options: ")
@@ -233,17 +270,19 @@ def book_appointment():
         except ValueError:
             display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.\n")
 
-    # print(type(selected_date))  # datetime.date
+    print(selected_date)  # datetime.date
+    selected_date = selected_date.strftime("%Y-%m-%d")
+    print(type(selected_date))
 
 
-    # get slots for doctor on that date
-    # doctor schedule to find all slots then appointments on that day for subtraction
+    # slot selection
+    # get slots for doctor on that date, doctor schedule to find all slots then appointments on that day for subtraction
 
     slots = doctorschedule_s.get_doctor_slots(selected_doctor,selected_date)
     print(slots)
 
     # get busy slots of doctor from appointments on that day
-    busy_slots = appointment_s.get_booked_doctor_slots(selected_doctor,selected_doctor)
+    busy_slots = appointment_s.get_booked_doctor_slots(selected_doctor,selected_date)
     print(busy_slots)
 
     free_slots = [slot for slot in slots if slot not in busy_slots]
@@ -267,8 +306,48 @@ def book_appointment():
         except ValueError:
             display("Error: Invalid input! Please enter a whole number")
 
-    print(selected_slot)
-    
+
+
+    # priority selection
+    selected_priority = None
+    while True:
+        try:
+            prioprity_input = int(input(priority_prompt))
+            if 1 <= prioprity_input <= 2:
+                selected_priority = prioprity_input
+                break
+            else:
+                display(f"Error: Please enter 1 or 2.")
+        except ValueError:
+            display("Error: Invalid input! Please enter a whole number")
+
+    # problem description selection:
+    problem_desc = None
+    while True:
+        problem_input = input(problem_des_prompt)
+        if len(problem_input) == 0:
+            display("Error: Description cannot be empty.")
+            continue
+        if len(problem_input) == 10:
+            display("Error: Description must be of length greater than 10.")
+            continue
+        if problem_input.isdigit():
+            display("Error: Description cannot contain digits only.")
+            continue
+
+        problem_desc = problem_input
+        break
+
+    appointment_obj = AppointmentsModel(None,selected_id,selected_doctor,selected_date,selected_slot[0],selected_slot[1],"BOOKED",selected_priority,appointment_cost,problem_desc)
+
+    # print(appointment_obj)
+
+    res = appointment_s.book_appointment(appointment_obj)
+    display(res['message'])
+    if res['success']:
+        display(f"""Your Appointment ID is {res['data']}.
+        Please remember this id for future reference.""")
+        # display("Please remember this id for future reference.")
 
 
 def patient_menu():

@@ -25,7 +25,7 @@ class DoctorRepo:
         return self.cursor.rowcount
 
     def get_doctors_from_service(self,service):
-        query = """select doctor_id,name from doctor
+        query = """select doctor_id,name,consultation_fee from doctor
         where specialisation = ?"""
 
         with self.connection:
