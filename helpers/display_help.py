@@ -1,5 +1,5 @@
 def display(message):
-    n = len(message) + 5
+    n = len(message) + 10
     print(f"""\n{'-'*n}
-{message}
+     {message}
 {'-'*n}""")

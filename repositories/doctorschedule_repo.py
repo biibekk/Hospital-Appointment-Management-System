@@ -21,3 +21,21 @@ class DoctorScheduleRepo:
             self.cursor.execute(query,args)
 
         return self.cursor.rowcount
+
+    def get_doctor_slots(self,doctor_id,date):
+        query = """
+            select schedule_id,start_time,end_time,slot_duration from doctorschedule 
+            where doctor_id = ? and date = ?
+            """
+        with self.connection:
+            self.cursor.execute(query,(doctor_id,date))
+
+        return self.cursor.fetchall()
+
+    def get_doctor_schedule(self,doctor_id):
+        query = """
+        select * from doctorschedule where doctor_id = ?"""
+        with self.connection:
+            self.cursor.execute(query,(doctor_id,))
+
+        return self.cursor.fetchall()

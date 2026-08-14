@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime,date
+import re
 
 from database.dbconnection import DatabaseConnection
 
@@ -56,8 +57,23 @@ def add_doctor():
 def add_doctor_schedule():
     display("Add Doctor Schedule")
     doctor_id = input("Enter doctor id: ")
-    date = input("Enter date(yyyy/mm/dd): ")
-    start_time = input("Enter start time(hh:mm): ")
+    date = input("Enter date(yyyy-mm-dd): ").strip()
+    date = datetime.strptime(date,"%Y-%m-%d").date()
+    start_time = None
+    while True:
+        time_input = input("Enter start time(24 Hour - HH:MM): ")
+        if not re.fullmatch(r"\d{2}:\d{2}", time_input):
+            display("Please enter time as HH:MM, e.g. 01:00 or 13:00")
+            continue
+
+        try:
+            time_obj = datetime.strptime(time_input,"%H:%M").time()
+            start_time = time_obj.strftime("%H:%M")
+            break
+
+        except ValueError:
+            display("Invalid time. Please use HH:MM.")
+
     end_time = input("Enter end time(hh:mm): ")
 
     return DoctorSchedule(doctor_id,date,start_time,end_time)
@@ -73,18 +89,18 @@ def add_doctor_schedule():
 # display(response['message'])
 
 
-menu_prompt = f"""\n{'-'*32}
-Hospital Appointment System
-{'-'*32}
-1. Hospita Admin
+menu_prompt = f"""\n{'-'*37}
+     Hospital Appointment System
+{'-'*37}
+1. Hospital Admin
 2. Doctor
 3. Patient
 4. Quit
 Enter your choice: """
 
-patient_prompt = f"""\n{'-'*18}
-Patient Menu
-{'-'*18}
+patient_prompt = f"""\n{'-'*23}
+     Patient Menu
+{'-'*23}
 1. Register Patient
 2. Book Appointment
 3. Cancel Appointment
@@ -94,32 +110,68 @@ Patient Menu
 7. Go Back
 Enter your choice: """
 
+admin_prompt = f"""\n{'-'*29}
+     Hospital Admin Menu
+{'-'*29}
+1. Add Doctor
+2. Add Doctor Schedule
+3. View Doctors
+4. View Schedules
+5. Go Back
+Enter your choice: """
+
 hospital_services = {1:'General Physician', 2:'Dermatology', 3:'Cardiology', 4:'Orthopedics', 5:'Pediatrics', 6:'Surgeon'}
 hostpital_services_list = "\n".join([f"{key}. {val}" for key,val in hospital_services.items()])
 max_choice = len(hospital_services) + 1
 
 
-service_prompt = f"""\n{'-'*19}
-Select Service
-{'-'*19}
+service_prompt = f"""\n{'-'*24}
+     Select Service
+{'-'*24}
 {hostpital_services_list}
 {max_choice}. Cancel
 Enter your choice: """
 
-doctor_prompt = """\n-----------------
-Select Doctor
------------------
+doctor_prompt = """\n---------------------
+     Select Doctor
+----------------------
 
 Doctor Id       Name
 {doctors}
 
 Enter Doctor Id: """
 
-date_prompt = f"""\n{'-'*15}
-Select Date
-{'-'*15}
-Enter date(yyyy/mm/dd): """
+date_prompt = f"""\n{'-'*31}
+     Select Appointment Date
+{'-'*31}
+Enter date(yyyy-mm-dd): """
 
+slot_prompt = """\n---------------------
+     Select Slot
+---------------------
+
+S.No.  Start Time   End Time
+{slots}
+
+Enter Slot No: """
+
+
+def hospital_admin_menu():
+    admin_input = input(admin_prompt)
+    while admin_input != '5':
+        if admin_input == '1':
+            new_doctor = add_doctor()
+            res = doctor_s.add_doctor(new_doctor)
+            display(res['message'])
+        elif admin_input == '2':
+            new_doctor_schedule = add_doctor_schedule()
+            res = doctorschedule_s.add_doctor_schedule(new_doctor_schedule)
+            display(res['message'])
+        elif admin_input == '5':
+            break
+        else:
+            display("Please enter a valid input.")
+        admin_input = input(admin_prompt)
 
 def get_doctor_for_date():
     pass
@@ -171,7 +223,7 @@ def book_appointment():
         try:
             # Validates format AND checks if date exists on calendar
             # string -> datetime -> date
-            selected_date = datetime.strptime(date_input,"%Y/%m/%d").date()
+            selected_date = datetime.strptime(date_input,"%Y-%m-%d").date()
 
             if selected_date < datetime.now().date():
                 display("Error: Date must be greater than today.\n")
@@ -179,9 +231,44 @@ def book_appointment():
 
             break
         except ValueError:
-            display("Error: Invalid date format or non-existent date! Please use YYYY/MM/DD.\n")
+            display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.\n")
 
-    print(selected_date)    
+    # print(type(selected_date))  # datetime.date
+
+
+    # get slots for doctor on that date
+    # doctor schedule to find all slots then appointments on that day for subtraction
+
+    slots = doctorschedule_s.get_doctor_slots(selected_doctor,selected_date)
+    print(slots)
+
+    # get busy slots of doctor from appointments on that day
+    busy_slots = appointment_s.get_booked_doctor_slots(selected_doctor,selected_doctor)
+    print(busy_slots)
+
+    free_slots = [slot for slot in slots if slot not in busy_slots]
+    slot_choices = '\n'.join([f"{ind:<8} {val[0]:<11} {val[1]}" for ind,val in enumerate(free_slots, start=1)])
+    max_slot_choice = len(free_slots)
+
+    if len(free_slots) == 0:
+        display(f"No slots available on {selected_date}. Please Try Again.")
+        # here it will return to function that called it
+    
+    selected_slot = None
+    while True:
+        try:
+            slot_input = int(input(slot_prompt.format(slots = slot_choices)))
+            if 1 <= slot_input <= max_slot_choice:
+                selected_slot = free_slots[slot_input-1]
+                break
+            else:
+                display(f"Error: Please enter a number between 1 and {max_slot_choice}.")
+
+        except ValueError:
+            display("Error: Invalid input! Please enter a whole number")
+
+    print(selected_slot)
+    
 
 
 def patient_menu():
@@ -215,9 +302,11 @@ def main():
 
     while user_input != '4':
         if user_input == '1':
-            pass
+            hospital_admin_menu()
+
         elif user_input == '2':
             pass
+
         elif user_input == '3':
             patient_menu()
         elif user_input == '4':
