@@ -2,10 +2,14 @@ import sqlite3
 
 from helpers.logger import dblogger
 from repositories.appointments_repo import AppointmentsRepo
+from repositories.doctor_repo import DoctorRepo
+
+from models.doctor_model import DoctorModel
 
 class AppointmentsService:
-    def __init__(self,appointment_repo :AppointmentsRepo):
+    def __init__(self,appointment_repo :AppointmentsRepo,doctor_repo: DoctorRepo):
         self.appo_repo = appointment_repo
+        self.doctor_repo = doctor_repo
 
     def get_booked_doctor_slots(self,doctor_id,date):
         try:
@@ -66,9 +70,28 @@ class AppointmentsService:
         # patient registers and i have his id which is passed here so no need to verify if patient exists
         try:
             all_appointments = self.appo_repo.view_appointment_history(patient_id)
+
+            # error on none return from repo cause success is true - check
             message = f"No Appointments exists for patient {patient_id}." if all_appointments is None else \
-                "Appointments history fetched successfully,"
+                "Appointments history fetched successfully."
             return {'success':True, 'message':message,'data':all_appointments}
         except sqlite3.Error as e:
             dblogger.error(f"Database Error: {e}")
             return {'success': False,'message': "Unable to fetch appointments history. Please try again."}
+
+    def get_doctor_appointments_today(self,doctor_id,date):
+        try:
+            doctor = DoctorModel(None,None,None,None,doctor_id)
+            if not self.doctor_repo.doctor_exists(doctor):
+                return {'success':False,'message':f"Doctor with ID {doctor_id} not found."}
+            
+            all_appointments = self.appo_repo.get_doctor_appointments_today(doctor_id,date)
+
+            success = False if all_appointments is None else True
+            message = f"No Appointments today for doctor {doctor_id}." if all_appointments is None else \
+                            "Today's Appointments fetched successfully,"
+            return {'success':success, 'message':message,'data':all_appointments}
+        except sqlite3.Error as e:
+            dblogger.error(f"Database Error: {e}")
+            return {'success': False,'message': "Unable to fetch today's appointments. Please try again."}
+            

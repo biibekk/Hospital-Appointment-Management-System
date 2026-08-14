@@ -62,10 +62,24 @@ class AppointmentsRepo:
             self.cursor.execute(query,(patient_id,))
 
         rows = self.cursor.fetchall()
-
         all_appointments = []
 
         for row in rows:
             all_appointments.append(AppointmentsModel(*row))
 
         return None if rows is None else all_appointments
+
+    def get_doctor_appointments_today(self,doctor_id,date):
+        query = """select * from appointments
+        where doctor_id = ? and date = ?"""
+
+        with self.connection:
+            self.cursor.execute(query,(doctor_id,date))
+
+        rows = self.cursor.fetchall()  # returns empty list if not found
+        all_appointments = []
+
+        for row in rows:
+            all_appointments.append(AppointmentsModel(*row))
+
+        return None if len(rows) == 0 else all_appointments

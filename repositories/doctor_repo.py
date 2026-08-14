@@ -12,7 +12,8 @@ class DoctorRepo:
             args = (doctor.name,doctor.contact)
 
         self.cursor.execute(query,args)
-
+        
+        # use doctor model here
         return self.cursor.fetchone()
 
     def add_doctor(self,doctor):
