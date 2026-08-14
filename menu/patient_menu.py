@@ -7,24 +7,11 @@ from services.patient_service import PatientService
 
 from models.patient_model import PatientModel
 from models.appointments_model import AppointmentsModel
+
 from helpers.display_help import display
+from helpers.prompts import Prompts
+from helpers.validators import Validators
 
-patient_prompt = f"""\n{'-'*23}
-     Patient Menu
-{'-'*23}
-1. Register Patient
-2. Book Appointment
-3. Cancel Appointment
-4. Reschedule Appointment
-5. Get Appointment Status
-6. View Appointment History
-7. Go Back
-Enter your choice: """
-
-patient_id_prompt = f"""{'-'*20}
-     Patient ID
-{'-'*20}
-Enter Patient ID no: """
 
 hospital_services = {1:'General Physician', 2:'Dermatology', 3:'Cardiology', 4:'Orthopedics', 5:'Pediatrics', 6:'Surgeon'}
 hostpital_services_list = "\n".join([f"{key}. {val}" for key,val in hospital_services.items()])
@@ -36,43 +23,6 @@ service_prompt = f"""\n{'-'*24}
 {hostpital_services_list}
 {max_choice}. Cancel
 Enter your choice: """
-
-doctor_prompt = """\n---------------------
-     Select Doctor
-----------------------
-
-Doctor Id       Name                     Consultation Fee
-{doctors}
-
-Enter Doctor Id: """
-
-date_prompt = f"""\n{'-'*31}
-     Select Appointment Date
-{'-'*31}
-Enter date(yyyy-mm-dd): """
-
-slot_prompt = """\n---------------------
-     Select Slot
----------------------
-
-S.No.  Start Time   End Time
-{slots}
-
-Enter Slot No: """
-
-
-priority_prompt = f"""\n{'-'*24}
-     Select Priority
-{'-'*24}
-1. Emergency
-2. Normal
-Enter your choice:"""
-
-
-problem_des_prompt = f"""\n{'-'*28}
-     Problem Description
-{'-'*28}
-Describe your problem in few words: """
 
 class PatientMenu():
     def __init__(self,appointment_s: AppointmentsService,doctor_s: DoctorService,doctorschedule_s: DoctorScheduleService,patient_s: PatientService):
@@ -94,32 +44,26 @@ class PatientMenu():
 
     def book_appointment(self):
         # get patient id, for now - need to work on registration
-        selected_id = None
-        while True:
-            try:
-                id_input = int(input(patient_id_prompt))
-
-                # need to add id validation or something
-                selected_id = id_input
-                break
-
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_id = Validators.get_int(Prompts.patient_id)
         
 
         # select hospital service
-        selected_service = None
-        while True:
-            try:
-                service_input = int(input(service_prompt))
-                if 1 <= service_input <= max_choice:
-                    if service_input == max_choice: return
-                    selected_service = hospital_services[service_input]
-                    break
-                else:
-                    display(f"Error: Please enter a number between 1 and {max_choice}.")
-            except ValueError as e:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_service_number = Validators.get_choice(service_prompt,1,max_choice)
+        if selected_service_number == max_choice: return
+        selected_service = hospital_services[selected_service_number]
+
+        # selected_service = None
+        # while True:
+        #     try:
+        #         service_input = int(input(service_prompt))
+        #         if 1 <= service_input <= max_choice:
+        #             if service_input == max_choice: return
+        #             selected_service = hospital_services[service_input]
+        #             break
+        #         else:
+        #             display(f"Error: Please enter a number between 1 and {max_choice}.")
+        #     except ValueError as e:
+        #         display("Error: Invalid input! Please enter a whole number")
 
         result = self.doctor_s.get_doctors_from_service(selected_service)
         if(not result['success']): 
@@ -137,7 +81,7 @@ class PatientMenu():
 
         while True:
             try:
-                doctor_input = int(input(doctor_prompt.format(doctors = doctors_list)))
+                doctor_input = int(input(Prompts.doctor.format(doctors = doctors_list)))
 
                 if doctor_input in doctor_ids:
                     selected_doctor = doctor_input
@@ -151,28 +95,26 @@ class PatientMenu():
 
 
         # date selection
-        selected_date = None
-        while True:
-            date_input = input(date_prompt).strip()
-            try:
-                # Validates format AND checks if date exists on calendar
-                # string -> datetime -> date
-                selected_date = datetime.strptime(date_input,"%Y-%m-%d").date()
+        selected_date = Validators.get_date(Prompts.date)
+        # while True:
+        #     date_input = input(Prompts.date).strip()
+        #     try:
+        #         # Validates format AND checks if date exists on calendar
+        #         # string -> datetime -> date
+        #         selected_date = datetime.strptime(date_input,"%Y-%m-%d").date()
 
-                if selected_date < datetime.now().date():
-                    display("Error: Date must be greater than today.\n")
-                    continue
+        #         if selected_date < datetime.now().date():
+        #             display("Error: Date must be greater than today.\n")
+        #             continue
 
-                break
-            except ValueError:
-                display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.\n")
+        #         break
+        #     except ValueError:
+        #         display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.\n")
 
-        # print(selected_date)  # datetime.date
-        selected_date = selected_date.strftime("%Y-%m-%d")
-        # print(type(selected_date))
+        # selected_date = selected_date.strftime("%Y-%m-%d")
 
 
-        # slot selection
+        # SLOT selection
         # get slots for doctor on that date, doctor schedule to find all slots then appointments on that day for subtraction
 
         slots = self.doctorschedule_s.get_doctor_slots(selected_doctor,selected_date)
@@ -186,50 +128,51 @@ class PatientMenu():
 
         if len(free_slots) == 0:
             display(f"No slots available on {selected_date}. Please Try Again.")
-            # here it will return to function that called it
+            return
         
-        selected_slot = None
-        while True:
-            try:
-                slot_input = int(input(slot_prompt.format(slots = slot_choices)))
-                if 1 <= slot_input <= max_slot_choice:
-                    selected_slot = free_slots[slot_input-1]
-                    break
-                else:
-                    display(f"Error: Please enter a number between 1 and {max_slot_choice}.")
+        selected_slot_number = Validators.get_choice(Prompts.slot.format(slots = slot_choices),1,max_slot_choice) 
+        selected_slot = free_slots[selected_slot_number - 1] 
+        # while True:
+        #     try:
+        #         slot_input = int(input(Prompts.slot.format(slots = slot_choices)))
+        #         if 1 <= slot_input <= max_slot_choice:
+        #             selected_slot = free_slots[slot_input-1]
+        #             break
+        #         else:
+        #             display(f"Error: Please enter a number between 1 and {max_slot_choice}.")
 
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        #     except ValueError:
+        #         display("Error: Invalid input! Please enter a whole number")
 
         # priority selection
-        selected_priority = None
-        while True:
-            try:
-                prioprity_input = int(input(priority_prompt))
-                if 1 <= prioprity_input <= 2:
-                    selected_priority = prioprity_input
-                    break
-                else:
-                    display(f"Error: Please enter 1 or 2.")
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_priority = Validators.get_choice(Prompts.priority,1,2)
+        # while True:
+        #     try:
+        #         prioprity_input = int(input(Prompts.priority))
+        #         if 1 <= prioprity_input <= 2:
+        #             selected_priority = prioprity_input
+        #             break
+        #         else:
+        #             display(f"Error: Please enter 1 or 2.")
+        #     except ValueError:
+        #         display("Error: Invalid input! Please enter a whole number")
 
         # problem description selection:
-        problem_desc = None
-        while True:
-            problem_input = input(problem_des_prompt)
-            if len(problem_input) == 0:
-                display("Error: Description cannot be empty.")
-                continue
-            if len(problem_input) == 10:
-                display("Error: Description must be of length greater than 10.")
-                continue
-            if problem_input.isdigit():
-                display("Error: Description cannot contain digits only.")
-                continue
+        problem_desc = Validators.get_problem_description(Prompts.problem_description)
+        # while True:
+        #     problem_input = input(Prompts.problem_description)
+        #     if len(problem_input) == 0:
+        #         display("Error: Description cannot be empty.")
+        #         continue
+        #     if len(problem_input) == 10:
+        #         display("Error: Description must be of length greater than 10.")
+        #         continue
+        #     if problem_input.isdigit():
+        #         display("Error: Description cannot contain digits only.")
+        #         continue
 
-            problem_desc = problem_input
-            break
+        #     problem_desc = problem_input
+        #     break
 
         appointment_obj = AppointmentsModel(None,selected_id,selected_doctor,selected_date,selected_slot[0],selected_slot[1],"BOOKED",selected_priority,appointment_cost,problem_desc)
 
@@ -243,27 +186,27 @@ class PatientMenu():
             # display("Please remember this id for future reference.")
         
     def cancel_appointment(self):
-        selected_app_id = None
-        while True:
-            try:
-                app_id_input = int(input("\nEnter Appointment ID: "))
-                selected_app_id = app_id_input
-                break
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_app_id = Validators.get_int("\nEnter Appointment ID: ")
+        # while True:
+        #     try:
+        #         app_id_input = int(input("\nEnter Appointment ID: "))
+        #         selected_app_id = app_id_input
+        #         break
+        #     except ValueError:
+        #         display("Error: Invalid input! Please enter a whole number")
 
         res = self.appointment_s.cancel_appointment(selected_app_id)
         display(res['message'])
 
     def reschedule_appointment(self):
-        selected_app_id = None
-        while True:
-            try:
-                app_id_input = int(input("\nEnter Appointment ID: "))
-                selected_app_id = app_id_input
-                break
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_app_id = Validators.get_int("\nEnter Appointment ID: ")
+        # while True:
+        #     try:
+        #         app_id_input = int(input("\nEnter Appointment ID: "))
+        #         selected_app_id = app_id_input
+        #         break
+        #     except ValueError:
+        #         display("Error: Invalid input! Please enter a whole number")
 
         res = self.appointment_s.get_appointment_details(selected_app_id)
         selected_doctor = None
@@ -276,25 +219,7 @@ class PatientMenu():
             selected_doctor = res['data'].doctor_id
 
         # date selection
-        selected_date = None
-        while True:
-            date_input = input(date_prompt).strip()
-            try:
-                # Validates format AND checks if date exists on calendar
-                # string -> datetime -> date
-                selected_date = datetime.strptime(date_input,"%Y-%m-%d").date()
-
-                if selected_date < datetime.now().date():
-                    display("Error: Date must be greater than today.\n")
-                    continue
-
-                break
-            except ValueError:
-                display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.\n")
-
-        # print(selected_date)  # datetime.date
-        selected_date = selected_date.strftime("%Y-%m-%d")
-        # print(type(selected_date))
+        selected_date = Validators.get_date(Prompts.date)
 
 
         # slot selection
@@ -313,18 +238,8 @@ class PatientMenu():
             display(f"No slots available on {selected_date}. Please Try Again.")
             # here it will return to function that called it
         
-        selected_slot = None
-        while True:
-            try:
-                slot_input = int(input(slot_prompt.format(slots = slot_choices)))
-                if 1 <= slot_input <= max_slot_choice:
-                    selected_slot = free_slots[slot_input-1]
-                    break
-                else:
-                    display(f"Error: Please enter a number between 1 and {max_slot_choice}.")
-
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_slot_number = Validators.get_choice(Prompts.slot.format(slots = slot_choices),1,max_slot_choice) 
+        selected_slot = free_slots[selected_slot_number - 1] 
 
         # maybe ask final confirmation [Y/N]
         result = self.appointment_s.reschedule_appointment(selected_date,selected_slot[0],selected_slot[1],selected_app_id)
@@ -332,14 +247,7 @@ class PatientMenu():
 
 
     def get_appointment_status(self):
-        selected_app_id = None
-        while True:
-            try:
-                app_id_input = int(input("\nEnter Appointment ID: "))
-                selected_app_id = app_id_input
-                break
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_app_id = Validators.get_int("\nEnter Appointment ID: ")
 
         res = self.appointment_s.get_appointment_details(selected_app_id)
         selected_doctor = None
@@ -357,14 +265,7 @@ class PatientMenu():
 
 
     def view_appointment_history(self):
-        selected_patient_id = None
-        while True:
-            try:
-                patient_id_input = int(input("\nEnter Patient ID: "))
-                selected_patient_id = patient_id_input
-                break
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_patient_id = Validators.get_int("\nEnter Patient ID: ")
 
         result = self.appointment_s.view_appointment_history(selected_patient_id)
         if not result['success']:
@@ -377,10 +278,11 @@ class PatientMenu():
     
 
     def patient_menu(self):
-        patient_input = input(patient_prompt).strip()
-        while(len(patient_input)==0):
-            display("Input cannot be empty. Try Again")
-            patient_input = input(patient_prompt).strip()
+        patient_input = Validators.get_non_empty_string(Prompts.patient_menu)
+        # patient_input = input(Prompts.patient).strip()
+        # while(len(patient_input)==0):
+        #     display("Input cannot be empty. Try Again")
+        #     patient_input = input(Prompts.patient).strip()
 
         while patient_input != '7':
             if patient_input == '1':
@@ -403,4 +305,4 @@ class PatientMenu():
                 break
             else:
                 display("Please enter a valid input.")
-            patient_input = input(patient_prompt)
+            patient_input = input(Prompts.patient_menu)

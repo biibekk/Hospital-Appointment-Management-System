@@ -67,7 +67,7 @@ class AppointmentsRepo:
         for row in rows:
             all_appointments.append(AppointmentsModel(*row))
 
-        return None if rows is None else all_appointments
+        return None if len(rows) == 0 else all_appointments
 
     def get_doctor_appointments_today(self,doctor_id,date):
         query = """select * from appointments

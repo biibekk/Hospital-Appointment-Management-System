@@ -71,10 +71,10 @@ class AppointmentsService:
         try:
             all_appointments = self.appo_repo.view_appointment_history(patient_id)
 
-            # error on none return from repo cause success is true - check
+            success = False if all_appointments is None else True
             message = f"No Appointments exists for patient {patient_id}." if all_appointments is None else \
                 "Appointments history fetched successfully."
-            return {'success':True, 'message':message,'data':all_appointments}
+            return {'success':success, 'message':message,'data':all_appointments}
         except sqlite3.Error as e:
             dblogger.error(f"Database Error: {e}")
             return {'success': False,'message': "Unable to fetch appointments history. Please try again."}
