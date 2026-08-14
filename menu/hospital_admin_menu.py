@@ -48,20 +48,6 @@ class HospitalAdminMenu:
         date = Validators.get_future_date("Enter schedule date(yyyy-mm-dd): ")
 
         start_time = Validators.get_time("Enter start time(24 Hour - HH:MM): ")
-        # while True:
-        #     time_input = input("Enter start time(24 Hour - HH:MM): ")
-        #     if not re.fullmatch(r"\d{2}:\d{2}", time_input):
-        #         display("Please enter time as HH:MM, e.g. 01:00 or 13:00")
-        #         continue
-
-        #     try:
-        #         time_obj = datetime.strptime(time_input,"%H:%M").time()
-        #         start_time = time_obj.strftime("%H:%M")
-        #         break
-
-        #     except ValueError:
-        #         display("Invalid time. Please use HH:MM.")
-
         end_time = Validators.get_time("Enter end time(24 Hour - HH:MM): ")
 
         new_doctor_schedule = DoctorSchedule(doctor_id,date,start_time,end_time)

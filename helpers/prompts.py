@@ -1,4 +1,14 @@
 class Prompts:
+    menu_prompt = f"""\n{'-'*37}
+     Hospital Appointment System
+{'-'*37}
+1. Hospital Admin
+2. Doctor
+3. Patient
+4. Quit
+Enter your choice: """
+
+
     patient_menu = f"""\n{'-'*23}
      Patient Menu
 {'-'*23}
@@ -10,6 +20,7 @@ class Prompts:
 6. View Appointment History
 7. Go Back
 Enter your choice: """
+    
 
     patient_id = f"""{'-'*20}
      Patient ID
@@ -26,10 +37,12 @@ Doctor Id       Name                     Consultation Fee
 
 Enter Doctor Id: """
 
+
     date = f"""\n{'-'*31}
      Select Appointment Date
 {'-'*31}
 Enter date(yyyy-mm-dd): """
+
 
     slot = """\n---------------------
      Select Slot

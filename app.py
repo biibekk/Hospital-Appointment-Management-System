@@ -40,6 +40,9 @@ patient = PatientMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
 admin = HospitalAdminMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
 doctor = DoctorMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
 
+from helpers.prompts import Prompts
+from helpers.validators import Validators
+
 
 # CHECKING SQL ERROR CATCH AND LOGGING METHOD
 # print(doctor_r.add_error_check(1,"demo",1234,"demo",1000))     this is bypassing the service with direct call to repo
@@ -47,21 +50,9 @@ doctor = DoctorMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
 # display(response['message'])
 
 
-menu_prompt = f"""\n{'-'*37}
-     Hospital Appointment System
-{'-'*37}
-1. Hospital Admin
-2. Doctor
-3. Patient
-4. Quit
-Enter your choice: """
-
 
 def main():
-    user_input = input(menu_prompt).strip()
-    while len(user_input)==0:
-        display("Input cannot be empty. Try Again")
-        user_input = input(menu_prompt).strip()
+    user_input = Validators.get_non_empty_string(Prompts.menu_prompt)
 
     while user_input != '4':
         if user_input == '1':
@@ -74,6 +65,6 @@ def main():
             break
         else:
             display("Please enter a valid input.")
-        user_input = input(menu_prompt)
+        user_input = input(Prompts.menu_prompt)
 
 main()

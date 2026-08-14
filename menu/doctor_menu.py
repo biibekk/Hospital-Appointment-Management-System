@@ -9,6 +9,7 @@ from models.doctor_model import DoctorModel
 from models.doctorschedule_model import DoctorSchedule
 
 from helpers.display_help import display
+from helpers.validators import Validators
 
 doctor_prompt = f"""\n{'-'*21}
      Doctor's Menu
@@ -27,18 +28,10 @@ class DoctorMenu:
         self.patient_s = patient_s
 
     def get_doctor_appointments_today(self):
-        selected_doctor_id = None
-        while True:
-            try:
-                doctor_id_input = int(input("\nEnter Doctor ID: "))
-                selected_doctor_id = doctor_id_input
-                break
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_doctor_id = Validators.get_int("Enter Doctor ID: ")
 
         date = datetime.now().date().strftime("%Y-%m-%d")
         # date = "2026-08-15"
-
 
         result = self.appointment_s.get_doctor_appointments_today(selected_doctor_id, date)
         if not result['success']:
@@ -51,14 +44,7 @@ class DoctorMenu:
             print(appointment)
 
     def get_patient_info(self):
-        selected_patient_id = None
-        while True:
-            try:
-                patient_id_input = int(input("\nEnter Patient ID: "))
-                selected_patient_id = patient_id_input
-                break
-            except ValueError:
-                display("Error: Invalid input! Please enter a whole number")
+        selected_patient_id = Validators.get_int("Enter Patient ID: ")
 
         result = self.patient_s.get_patient_info(selected_patient_id)
         if not result['success']:
@@ -69,14 +55,7 @@ class DoctorMenu:
         print(result['data'])
 
     def get_patient_history(self):
-            selected_patient_id = None
-            while True:
-                try:
-                    patient_id_input = int(input("\nEnter Patient ID: "))
-                    selected_patient_id = patient_id_input
-                    break
-                except ValueError:
-                    display("Error: Invalid input! Please enter a whole number")
+            selected_patient_id = Validators.get_int("Enter Patient ID: ")
     
             result = self.appointment_s.view_appointment_history(selected_patient_id)
             if not result['success']:
