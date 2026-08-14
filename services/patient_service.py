@@ -12,9 +12,9 @@ class PatientService:
             row = self.patient_repo.patient_exists(patient)
 
             if not row:
-                res = self.patient_repo.register_patient(patient)
-                if(res==1):
-                    return {'success':True,'message':"Patient Registration Successfully."}
+                patient_id = self.patient_repo.register_patient(patient)
+                if(patient_id):
+                    return {'success':True,'message':"Patient Registration Successfully.",'data':patient_id}
                 else:
                     return {'success':False,'message':"Patient Registration Failed."}
             else:

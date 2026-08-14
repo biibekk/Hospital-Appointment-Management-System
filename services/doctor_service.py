@@ -32,7 +32,14 @@ class DoctorService:
         try:
             result = self.doctor_repo.get_doctors_from_service(service)
             # if there's a service, there'll be doctors so result can't be empty
-            return {'success':True, 'message': f"Doctors with specialisation{service} fetched successfully.",'data':result}
+
+            doctors_data = {t[0]:(t[1],t[2]) for t in result}
+            doctor_ids = [t[0] for t in result]
+            doctors_choices = '\n'.join([f"{t[0]:<15} {t[1]:<25} {t[2]}" for t in result])
+
+            combined_data = (doctors_data,doctor_ids,doctors_choices)
+
+            return {'success':True, 'message': f"Doctors with specialisation{service} fetched successfully.",'data':combined_data}
         except sqlite3.Error as e:
             dblogger(f"Database error: {e}")
             return {'success': False,'message': f"Unable to fetch doctors with specialisation {service}. Please try again."}

@@ -3,6 +3,7 @@ import sqlite3
 from helpers.logger import dblogger
 from repositories.appointments_repo import AppointmentsRepo
 from repositories.doctor_repo import DoctorRepo
+from repositories.doctorschedule_repo import DoctorScheduleRepo
 
 from models.doctor_model import DoctorModel
 
@@ -24,6 +25,13 @@ class AppointmentsService:
             dblogger.error(f"Database Error: {e}")
             return {'success': False,'message': f"Unable to fetch booked slots for doctor id {doctor_id}. Please try again."}
 
+    def get_doctors_free_slots(self,doctor_day_slots,doctor_id,date):
+        busy_slots = self.appo_repo.get_booked_doctor_slots(doctor_id,date)
+
+        free_slots = [slot for slot in doctor_day_slots if slot not in busy_slots]
+        slot_choices = '\n'.join([f"{ind:<8} {val[0]:<11} {val[1]}" for ind,val in enumerate(free_slots, start=1)])
+
+        return (free_slots, slot_choices)
 
     def book_appointment(self,appointment):
         try:

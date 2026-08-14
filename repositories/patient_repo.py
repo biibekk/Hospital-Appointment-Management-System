@@ -21,7 +21,7 @@ class PatientRepo:
         with self.connection:
             self.cursor.execute(query,(patient.name,patient.dob,patient.gender,patient.contact))
 
-        return self.cursor.rowcount
+        return self.cursor.lastrowid
 
     def get_patient_info(self,patient_id):
         query = """select * from patient

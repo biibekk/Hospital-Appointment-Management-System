@@ -19,7 +19,20 @@ class Validators:
 
             display(f"Error: Please enter a number between {min_val} and {max_val}.")
 
-    def get_date(prompt):
+    def get_choice_from_list(prompt,list_options,field_name):
+         while True:
+            try:
+                doctor_input = int(input(prompt))
+
+                if doctor_input in list_options:
+                    return doctor_input
+                else:
+                    display(f"Error: Please enter {field_name} ID from above options: ")
+
+            except ValueError:
+                display("Error: Invalid input! Please enter a whole number")
+
+    def get_future_date(prompt):
         while True:
             date_input = input(prompt).strip()
             try:
@@ -33,6 +46,21 @@ class Validators:
                 return selected_date.strftime("%Y-%m-%d")
             except ValueError:
                 display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.")
+
+    def get_past_date(prompt):
+            while True:
+                date_input = input(prompt).strip()
+                try:
+                    # Validates format AND checks if date exists on calendar
+                    # string -> datetime -> date
+                    selected_date = datetime.strptime(date_input,"%Y-%m-%d").date()
+    
+                    if selected_date > datetime.now().date():
+                        display("Error: Date cannot be in the future.")
+                        continue
+                    return selected_date.strftime("%Y-%m-%d")
+                except ValueError:
+                    display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.")
 
     def get_non_empty_string(prompt):
         while True:
@@ -60,4 +88,39 @@ class Validators:
                 display("Error: Description cannot contain digits only.")
                 continue
 
+            return value
+
+    def get_single_charater(prompt,chars):
+        while True:
+            value = input(prompt).strip()
+
+            if not value:
+                display("Error: Input cannot be empty.")
+                continue
+
+            if len(value) != 1:
+                display(f"Error: Gender must be 1 character{chars} only.")
+                continue
+
+            value = value.upper()
+            if value not in chars:
+                display(f"Error: Gender must be valid character{chars} only.")
+                continue
+
+            return value
+        
+    def get_contact(prompt,length):
+        while True:
+            value = input(prompt).strip()
+            if not value:
+                display("Error: Contact cannot be empty.")
+                continue
+
+            if not value.isdigit():
+                display(f"Error: Contact must be {length} digits only.")
+                continue
+
+            if len(value) != length:
+                display(f"Error: Contact must be exactly {length} digits only.")
+                continue
             return value
