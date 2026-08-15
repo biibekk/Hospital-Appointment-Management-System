@@ -31,10 +31,10 @@ doctor_r = DoctorRepo(connection)
 doctorschedule_r = DoctorScheduleRepo(connection)
 patient_r = PatientRepo(connection)
 
-appointment_s = AppointmentsService(appointment_r,doctor_r)
 doctor_s = DoctorService(doctor_r)
 doctorschedule_s = DoctorScheduleService(doctorschedule_r,doctor_r)
 patient_s = PatientService(patient_r)
+appointment_s = AppointmentsService(appointment_r,doctor_r,doctorschedule_r,doctorschedule_s)
 
 patient = PatientMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
 admin = HospitalAdminMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
@@ -48,8 +48,6 @@ from helpers.validators import Validators
 # print(doctor_r.add_error_check(1,"demo",1234,"demo",1000))     this is bypassing the service with direct call to repo
 # response = doctor_s.add_error_check(1,"demo",1234,"demo",1000)
 # display(response['message'])
-
-
 
 def main():
     user_input = Validators.get_non_empty_string(Prompts.menu_prompt)
@@ -71,3 +69,5 @@ main()
 
 # doctorschedule_r.delete_schedule()
 # appointment_r.delete()
+# appointment_r.check_unique()
+# UNIQUE constraint failed: appointments.doctor_id, appointments.date, appointments.start_time

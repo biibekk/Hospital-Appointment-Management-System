@@ -52,12 +52,22 @@ class PatientMenu():
 
         return self.appointment_s.get_doctors_free_slots(doctor_day_slots,doctor_id,date)
 
+    def check_for_reschedule(self,selected_date,earliest_slot_is_free):
+        # date,doctor_id and start time are unique in appointments
+        for id,slot in earliest_slot_is_free.items():
+            normal_appointment = self.appointment_s.get_normal_appointment(id,selected_date,slot[0][0],slot[0][1])
+            display(normal_appointment['message'])
+            if normal_appointment['success']:
+                # print(normal_appointment['data'])
+                return [id,slot[0]]
+        
+
     def priority_booking(self,selected_id):
         selected_service_number = Validators.get_choice(service_prompt,1,max_choice)
         if selected_service_number == max_choice: return
         selected_service = hospital_services[selected_service_number]
 
-        selected_date = datetime.now().date()
+        selected_date = datetime.now().date().strftime("%Y-%m-%d")
         selected_time = datetime.now().time()
 
         result = self.doctor_s.get_doctors_from_service(selected_service)
@@ -86,30 +96,28 @@ class PatientMenu():
 
         print(earliest_slot_is_free,"\n")
 
-        # get_free_slot = {}
-        # # find 1st doctor id and free slot 
-        # for id,slots in earliest_slot_is_free.items():
-        #     for slot in slots:
-        #         if slot[1]:
-        #             get_free_slot[id] = slot[0]
-        #             break
-
-        # print(get_free_slot)
-        # if(len(get_free_slot)==0):
-            # pass
-
         earliest_free_doctor = []
         for id,slot in earliest_slot_is_free.items():
             if slot[1]:
                 earliest_free_doctor = [id,slot[0]]
                 break
-        if len(earliest_free_doctor)==0:
-            pass
+
+
+        print(earliest_free_doctor)
 
         problem_description = Validators.get_problem_description(Prompts.problem_description)
 
-        selected_doctor = earliest_free_doctor[0]
-        selected_slot = earliest_free_doctor[1]
+        selected_doctor,selected_slot = None,None
+        if len(earliest_free_doctor)==0:
+            result = self.check_for_reschedule(selected_date,earliest_slot_is_free)
+            if result is None:
+                return
+            selected_doctor = result[0]
+            selected_slot = result[1]
+        else:
+            selected_doctor = earliest_free_doctor[0]
+            selected_slot = earliest_free_doctor[1]
+
         appointment_cost = doctors_data[selected_doctor][1]
 
         appointment_obj = AppointmentsModel(None,selected_id,selected_doctor,selected_date,selected_slot[0],selected_slot[1],"BOOKED",1,appointment_cost,problem_description)
@@ -123,6 +131,7 @@ class PatientMenu():
      Your Appointment Details:
      Doctor ID: {selected_doctor}
      Doctor Name: {doctors_data[selected_doctor][0]}
+     Slot: {selected_slot[0]} - {selected_slot[1]}
      Appointment Cost: {appointment_cost}""")
 
 
@@ -158,7 +167,6 @@ class PatientMenu():
 
         # SLOT selection
         # all day slots(schedule) - booked slots(appointments)
-        # don't show todays past slot
 
         free_slots,slot_choices = self.get_doctors_free_slots(selected_doctor,selected_date)
         max_slot_choice = len(free_slots)
@@ -203,7 +211,7 @@ class PatientMenu():
             selected_doctor = res['data'].doctor_id
 
         # date selection
-        selected_date = Validators.get_date(Prompts.date)
+        selected_date = Validators.get_future_date(Prompts.date)
 
         free_slots,slot_choices = self.get_doctors_free_slots(selected_doctor,selected_date)
         max_slot_choice = len(free_slots)

@@ -84,7 +84,23 @@ class AppointmentsRepo:
 
         return None if len(rows) == 0 else all_appointments
 
+    def get_normal_appointment(self,doctor_id,date,start_time):
+        query = """select * from appointments
+        where doctor_id = ? and date = ? and start_time = ? and priority = ?"""
+
+        with self.connection:
+            self.cursor.execute(query,(doctor_id,date,start_time,2))
+
+        row = self.cursor.fetchone()
+        return None if row is None else AppointmentsModel(*row)
+
     def delete(self):
-        query = "delete from appointments where appointment_id = 2"
+        query = "delete from appointments"
+        with self.connection:
+            self.cursor.execute(query)
+
+    def check_unique(self):
+        query = """insert into appointments(patient_id,doctor_id,date,start_time,end_time,status,priority,appointment_cost,problem_description)
+        values(1,2,'2026-08-15','14:30','15:00','BOOKED',2,800,'headache and pain')"""
         with self.connection:
             self.cursor.execute(query)

@@ -4,13 +4,16 @@ from helpers.logger import dblogger
 from repositories.appointments_repo import AppointmentsRepo
 from repositories.doctor_repo import DoctorRepo
 from repositories.doctorschedule_repo import DoctorScheduleRepo
+from services.doctorschedule_service import DoctorScheduleService
 
 from models.doctor_model import DoctorModel
 
 class AppointmentsService:
-    def __init__(self,appointment_repo :AppointmentsRepo,doctor_repo: DoctorRepo):
+    def __init__(self,appointment_repo :AppointmentsRepo,doctor_repo: DoctorRepo, doc_sched_repo: DoctorScheduleRepo, doc_sched_service: DoctorScheduleService):
         self.appo_repo = appointment_repo
         self.doctor_repo = doctor_repo
+        self.doc_sched_repo = doc_sched_repo
+        self.doc_sched_s = doc_sched_service
 
     def get_booked_doctor_slots(self,doctor_id,date):
         try:
@@ -102,4 +105,38 @@ class AppointmentsService:
         except sqlite3.Error as e:
             dblogger.error(f"Database Error: {e}")
             return {'success': False,'message': "Unable to fetch today's appointments. Please try again."}
+
+
+    def get_normal_appointment(self,doctor_id,date,start_time,end_time):
+        try:
+            result = self.appo_repo.get_normal_appointment(doctor_id,date,start_time)
+
+            if result is None:
+                return {'success':False,'message':"Normal Appointmens not found."}
             
+            return self.reschedule_normal_appointment(result)
+
+            # return {'success':True,'message':"Normal appointment found.",'data':result}
+        except sqlite3.Error as e:
+            dblogger.error(f"Database Error: {e}")
+            return {'success': False,'message': "Unable to fetch today's appointments. Please try again."}
+
+
+    def reschedule_normal_appointment(self,normal):
+        doctor_day_slots = self.doc_sched_s.get_doctor_slots(normal.doctor_id,normal.date)
+
+        free_slots,slot_choices = self.get_doctors_free_slots(doctor_day_slots,normal.doctor_id,normal.date)
+
+        if(len(free_slots) == 0):
+            return {'success':False,'message':'No free slot to reschedule appointment.'}
+
+        start_time,end_time = free_slots[0]
+
+        result = self.reschedule_appointment(normal.date,start_time,end_time,normal.appointment_id)
+
+        message = f"""Appointment with id {normal.appointment_id} rescheduled.
+     New Slot: {start_time} - {end_time}"""
+        if not result['success']:
+            message = result['message']
+
+        return {'success':result['success'],'message':message}
