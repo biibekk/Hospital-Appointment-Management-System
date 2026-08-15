@@ -39,3 +39,8 @@ class DoctorScheduleRepo:
             self.cursor.execute(query,(doctor_id,))
 
         return self.cursor.fetchall()
+
+    def delete_schedule(self):
+        query = "delete from doctorschedule where schedule_id = 11"
+        with self.connection:
+            self.cursor.execute(query)

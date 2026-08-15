@@ -83,3 +83,8 @@ class AppointmentsRepo:
             all_appointments.append(AppointmentsModel(*row))
 
         return None if len(rows) == 0 else all_appointments
+
+    def delete(self):
+        query = "delete from appointments where appointment_id = 2"
+        with self.connection:
+            self.cursor.execute(query)

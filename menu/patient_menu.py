@@ -52,11 +52,90 @@ class PatientMenu():
 
         return self.appointment_s.get_doctors_free_slots(doctor_day_slots,doctor_id,date)
 
+    def priority_booking(self,selected_id):
+        selected_service_number = Validators.get_choice(service_prompt,1,max_choice)
+        if selected_service_number == max_choice: return
+        selected_service = hospital_services[selected_service_number]
+
+        selected_date = datetime.now().date()
+        selected_time = datetime.now().time()
+
+        result = self.doctor_s.get_doctors_from_service(selected_service)
+        
+        if(not result['success']): 
+            display(result['message'])
+            return
+
+        doctors_data,doctor_ids,doctors_choices = result['data']
+
+        doctors_slot = {id : self.doctorschedule_s.get_doctor_slots(id,selected_date) for id in doctor_ids}
+        print(doctors_slot,"\n")
+
+        doctors_free_slot = {id: self.appointment_s.get_doctors_free_slots(doctors_slot[id],id,selected_date)[0] for id in doctors_slot.keys()}
+        print(doctors_free_slot,"\n")
+
+        earliest_slot_is_free = {}  # id: [slot, 0/1]
+        for id, slots in doctors_slot.items():
+            for slot in slots:
+                start_time = datetime.strptime(slot[0],"%H:%M").time()
+                if start_time > selected_time:
+                    # if id not in earliest_slot_is_free:
+                    earliest_slot_is_free[id] = [slot, slot in doctors_free_slot[id]]
+                    # else: earliest_slot_is_free[id].append([slot, slot in doctors_free_slot[id]])
+                    break
+
+        print(earliest_slot_is_free,"\n")
+
+        # get_free_slot = {}
+        # # find 1st doctor id and free slot 
+        # for id,slots in earliest_slot_is_free.items():
+        #     for slot in slots:
+        #         if slot[1]:
+        #             get_free_slot[id] = slot[0]
+        #             break
+
+        # print(get_free_slot)
+        # if(len(get_free_slot)==0):
+            # pass
+
+        earliest_free_doctor = []
+        for id,slot in earliest_slot_is_free.items():
+            if slot[1]:
+                earliest_free_doctor = [id,slot[0]]
+                break
+        if len(earliest_free_doctor)==0:
+            pass
+
+        problem_description = Validators.get_problem_description(Prompts.problem_description)
+
+        selected_doctor = earliest_free_doctor[0]
+        selected_slot = earliest_free_doctor[1]
+        appointment_cost = doctors_data[selected_doctor][1]
+
+        appointment_obj = AppointmentsModel(None,selected_id,selected_doctor,selected_date,selected_slot[0],selected_slot[1],"BOOKED",1,appointment_cost,problem_description)
+        
+        res = self.appointment_s.book_appointment(appointment_obj)
+        display(res['message'])
+        if res['success']:
+            display(f"""Your Appointment ID is {res['data']}.
+     Please remember this id for future reference.
+     
+     Your Appointment Details:
+     Doctor ID: {selected_doctor}
+     Doctor Name: {doctors_data[selected_doctor][0]}
+     Appointment Cost: {appointment_cost}""")
+
 
     def book_appointment(self):
         # get patient id, for now - need to work on registration
         selected_id = Validators.get_int(Prompts.patient_id)
-        
+
+        # priority selection
+        selected_priority = Validators.get_choice(Prompts.priority,1,2)
+
+        if selected_priority == 1:
+            return self.priority_booking(selected_id)
+
         # select hospital service
         selected_service_number = Validators.get_choice(service_prompt,1,max_choice)
         if selected_service_number == max_choice: return
@@ -79,6 +158,7 @@ class PatientMenu():
 
         # SLOT selection
         # all day slots(schedule) - booked slots(appointments)
+        # don't show todays past slot
 
         free_slots,slot_choices = self.get_doctors_free_slots(selected_doctor,selected_date)
         max_slot_choice = len(free_slots)
@@ -89,9 +169,6 @@ class PatientMenu():
         
         selected_slot_number = Validators.get_choice(Prompts.slot.format(slots = slot_choices),1,max_slot_choice) 
         selected_slot = free_slots[selected_slot_number - 1] 
-
-        # priority selection
-        selected_priority = Validators.get_choice(Prompts.priority,1,2)
 
         # problem description selection:
         problem_desc = Validators.get_problem_description(Prompts.problem_description)
