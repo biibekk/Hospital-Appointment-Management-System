@@ -15,7 +15,6 @@ class DoctorRepo:
 
         self.cursor.execute(query,args)
         row =  self.cursor.fetchone()
-
         return None if row is None else DoctorModel(*row)
 
     def add_doctor(self,doctor):

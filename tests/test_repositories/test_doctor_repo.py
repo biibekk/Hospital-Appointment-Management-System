@@ -85,5 +85,3 @@ class TestDoctorRepo(TestCase):
         self.doctor.cursor.execute.assert_called_once_with("""select doctor_id,name,consultation_fee from doctor
         where specialisation = ?""",(service,))
         self.assertEqual(result,[(1,"Dr. Anant",1000),(2,"Dr. Shikha",1000)])
-
-    

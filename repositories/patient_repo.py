@@ -6,13 +6,17 @@ class PatientRepo:
         self.cursor = connection.cursor()
 
     def patient_exists(self,patient):
-        # query = "select * from patient where id = ?"
+        query = "select * from patient where id = ?"
+        args = (patient.patient_id,)
 
-        # self.cursor.execute(query,(patient.patient_id,))
+        if patient.patient_id is None:
+            query = "select * from patient where name = ? and dob = ? and gender = ? and contact = ?"
+            args = (patient.name,patient.dob,patient.gender,patient.contact)
 
-        # return self.cursor.fetchone()
+        self.cursor.execute(query,args)
 
-        return False
+        row =  self.cursor.fetchone()
+        return None if row is None else row[0]
 
     def register_patient(self,patient):
         query = """Insert into patient(name,dob,gender,contact)

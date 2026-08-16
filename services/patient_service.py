@@ -7,18 +7,29 @@ class PatientService:
     def __init__(self,patient_repo_obj: PatientRepo):
         self.patient_repo = patient_repo_obj
 
+    def patient_exists(self,patient):
+        try:
+            result = self.patient_repo.patient_exists(patient)
+
+            if result is None:
+                {'success': False,'message': "Patient Not Found"}
+            return {'success': True,'message': f"Patient Account Already exists with ID {result}"}
+        except sqlite3.Error as e:
+            dblogger.error(f"Database error: {e}")
+            return {'success': False,'message': "Unable to check if patient exists. Please try again."}
+
     def register_patient(self,patient):
         try:
-            row = self.patient_repo.patient_exists(patient)
+            result = self.patient_exists(patient)
 
-            if not row:
+            if not result['success']:
                 patient_id = self.patient_repo.register_patient(patient)
                 if(patient_id):
                     return {'success':True,'message':"Patient Registration Successfully.",'data':patient_id}
                 else:
                     return {'success':False,'message':"Patient Registration Failed."}
             else:
-                return {'success':False,'message':"Patient Account Already Exists."}
+                return {'success':False,'message':result['message']}
         except sqlite3.Error as e:
             dblogger.error(f"Database error: {e}")
             return {'success': False,'message': "Unable to add doctor schedule. Please try again."}
