@@ -35,12 +35,3 @@ class DoctorRepo:
             self.cursor.execute(query,(service,))
 
         return self.cursor.fetchall()
-
-    def add_error_check(self,*args):
-        query = """insert into doctor(doctor_id,name,contact,specialisation,consultation_fee) 
-        values(?,?,?,?,?)"""
-
-        with self.connection:
-            self.cursor.execute(query,args)
-
-        return self.cursor.rowcount 

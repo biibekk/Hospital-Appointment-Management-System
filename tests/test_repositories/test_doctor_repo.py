@@ -11,6 +11,7 @@ class TestDoctorRepo(TestCase):
         self.doctor = DoctorRepo(self.connection)
         # self.connection.cursor() - >self.connection.cursor.return_value
 
+
     def test_doctor_exists_with_id_true(self):
         doctor = DoctorModel(1,None,None,None,None)
         self.doctor.cursor.fetchone.return_value = (1,"demo",1234,"surgeon",1000)
@@ -25,8 +26,8 @@ class TestDoctorRepo(TestCase):
         self.assertEqual(result.contact, 1234)
         self.assertEqual(result.specialisation, "surgeon")
         self.assertEqual(result.consultation_fee, 1000)
-        self.doctor.cursor.execute.assert_called_once()
         self.doctor.cursor.execute.assert_called_once_with("select * from doctor where doctor_id = ?",(doctor.doctor_id,))
+
 
     def test_doctor_exists_with_id_false(self):
             doctor = DoctorModel(1,"demo",1234,"physician",100)
@@ -34,9 +35,9 @@ class TestDoctorRepo(TestCase):
     
             result = self.doctor.doctor_exists(doctor)
     
-            self.assertEqual(result,None)
-            self.doctor.cursor.execute.assert_called_once()
+            self.assertIsNone(result)
             self.doctor.cursor.execute.assert_called_once_with("select * from doctor where doctor_id = ?",(doctor.doctor_id,))
+
 
     def test_doctor_exists_without_id_true(self):
         doc = DoctorModel(None,"demo",1234,"physician",100)
@@ -50,8 +51,8 @@ class TestDoctorRepo(TestCase):
         self.assertEqual(result.contact, 1234)
         self.assertEqual(result.specialisation, "surgeon")
         self.assertEqual(result.consultation_fee, 1000)
-        self.doctor.cursor.execute.assert_called_once()
         self.doctor.cursor.execute.assert_called_once_with('select * from doctor where name = ? and contact = ?', ('demo', 1234))
+
 
     def test_doctor_exists_without_id_false(self):
             doc = DoctorModel(None,"demo",1234,"physician",100)
@@ -59,10 +60,10 @@ class TestDoctorRepo(TestCase):
 
             result = self.doctor.doctor_exists(doc)
     
-            self.assertEqual(result,None)  
+            self.assertIsNone(result)  
     
-            self.doctor.cursor.execute.assert_called_once()
             self.doctor.cursor.execute.assert_called_once_with('select * from doctor where name = ? and contact = ?', ('demo', 1234))
+
 
     def test_add_doctor(self):
         doctor = DoctorModel(None,"demo",1234,"physician",100)
@@ -71,7 +72,18 @@ class TestDoctorRepo(TestCase):
         result = self.doctor.add_doctor(doctor)
 
         self.assertEqual(result,1)
-        self.doctor.cursor.execute.assert_called_once()
         self.doctor.cursor.execute.assert_called_once_with("""insert into doctor(name,contact,specialisation,consultation_fee) 
         values(?,?,?,?)""",(doctor.name,doctor.contact,doctor.specialisation,doctor.consultation_fee))
 
+
+    def test_get_doctor_from_service(self):
+        service = "physician"
+        self.doctor.cursor.fetchall.return_value = [(1,"Dr. Anant",1000),(2,"Dr. Shikha",1000)]
+
+        result = self.doctor.get_doctors_from_service(service)
+
+        self.doctor.cursor.execute.assert_called_once_with("""select doctor_id,name,consultation_fee from doctor
+        where specialisation = ?""",(service,))
+        self.assertEqual(result,[(1,"Dr. Anant",1000),(2,"Dr. Shikha",1000)])
+
+    

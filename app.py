@@ -52,7 +52,7 @@ def main():
             display("Please enter a valid input.")
         user_input = input(Prompts.menu_prompt)
 
-main()
+# main()
 
 # doctorschedule_r.delete_schedule()
 # appointment_r.delete()
