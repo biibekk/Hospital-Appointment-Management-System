@@ -17,9 +17,7 @@ admin_prompt = f"""\n{'-'*29}
 {'-'*29}
 1. Add Doctor
 2. Add Doctor Schedule
-3. View Doctors - not added
-4. View Schedules - not added
-5. Go Back
+3. Go Back
 Enter your choice: """
 
 class HospitalAdminMenu:
@@ -61,7 +59,7 @@ class HospitalAdminMenu:
                 self.add_doctor()
             elif admin_input == '2':
                 self.add_doctor_schedule()
-            elif admin_input == '5':
+            elif admin_input == '3':
                 break
             else:
                 display("Please enter a valid input.")

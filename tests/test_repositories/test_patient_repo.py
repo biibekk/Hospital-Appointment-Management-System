@@ -20,7 +20,7 @@ class TestPatient(TestCase):
         result = self.patient.patient_exists(patient)
 
         self.assertEqual(result, 1)
-        self.patient.cursor.execute.assert_called_once_with("select * from patient where id = ?",(patient.patient_id,))
+        self.patient.cursor.execute.assert_called_once_with("select * from patient where patient_id = ?",(patient.patient_id,))
 
 
     def test_patient_exists_with_id_false(self):
@@ -30,7 +30,7 @@ class TestPatient(TestCase):
         result = self.patient.patient_exists(patient)
 
         self.assertIsNone(result)
-        self.patient.cursor.execute.assert_called_once_with("select * from patient where id = ?",(patient.patient_id,))
+        self.patient.cursor.execute.assert_called_once_with("select * from patient where patient_id = ?",(patient.patient_id,))
 
 
     def test_patient_exists_without_id_true(self):
@@ -40,8 +40,8 @@ class TestPatient(TestCase):
         result = self.patient.patient_exists(patient)
 
         self.assertEqual(result, 1)
-        self.patient.cursor.execute.assert_called_once_with("select * from patient where name = ? and dob = ? and gender = ? and contact = ?",
-        (patient.name, patient.dob, patient.gender, patient.contact))
+        self.patient.cursor.execute.assert_called_once_with("select * from patient where name = ? and dob = ? and gender = ? and contact = ?"   ,
+            (patient.name,patient.dob,patient.gender,patient.contact))
 
 
     def test_patient_exists_without_id_false(self):

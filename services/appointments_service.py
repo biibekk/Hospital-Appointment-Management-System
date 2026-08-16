@@ -1,19 +1,25 @@
 import sqlite3
-
+from datetime import datetime
 from helpers.logger import dblogger
+
 from repositories.appointments_repo import AppointmentsRepo
 from repositories.doctor_repo import DoctorRepo
 from repositories.doctorschedule_repo import DoctorScheduleRepo
+
 from services.doctorschedule_service import DoctorScheduleService
+from services.doctor_service import DoctorService
 
 from models.doctor_model import DoctorModel
+from models.appointments_model import AppointmentsModel
 
 class AppointmentsService:
-    def __init__(self,appointment_repo :AppointmentsRepo,doctor_repo: DoctorRepo, doc_sched_repo: DoctorScheduleRepo, doc_sched_service: DoctorScheduleService):
+    def __init__(self,appointment_repo :AppointmentsRepo,doctor_repo: DoctorRepo, doc_sched_repo: DoctorScheduleRepo,
+                doc_sched_service: DoctorScheduleService, doctor_s: DoctorService):
         self.appo_repo = appointment_repo
         self.doctor_repo = doctor_repo
         self.doc_sched_repo = doc_sched_repo
         self.doc_sched_s = doc_sched_service
+        self.doctor_s = doctor_s
 
 
     def get_booked_doctor_slots(self,doctor_id,date):
@@ -136,18 +142,17 @@ class AppointmentsService:
     def reschedule_normal_appointment(self,normal):
         try:
             doctor_day_slots = self.doc_sched_s.get_doctor_slots(normal.doctor_id,normal.date)
-
             free_slots,slot_choices = self.get_doctors_free_slots(doctor_day_slots,normal.doctor_id,normal.date)
 
             if(len(free_slots) == 0):
                 return {'success':False,'message':'No free slot to reschedule appointment.'}
 
             start_time,end_time = free_slots[0]
-
             result = self.reschedule_appointment(normal.date,start_time,end_time,normal.appointment_id)
 
             message = f"""Appointment with id {normal.appointment_id} rescheduled.
         New Slot: {start_time} - {end_time}"""
+            
             if not result['success']:
                 message = result['message']
 
@@ -155,4 +160,82 @@ class AppointmentsService:
         except sqlite3.Error as e:
             dblogger.error(f"Database Error: {e}")
             return {'success': False,'message': f"Unable to reschedule appointment {normal.appointment_id}. Please try again."}
+
+
+    def check_for_reschedule(self,selected_date,earliest_slot_is_free):
+        # date,doctor_id and start time are unique in appointments
+        for id,slot in earliest_slot_is_free.items():
+            normal_appointment = self.get_normal_appointment(id,selected_date,slot[0][0],slot[0][1])
+            # display(normal_appointment['message'])
+            if normal_appointment['success']:
+                # normal_appointment['message'] = [normal_appointment['message']]
+                normal_appointment['data'] = [id,slot[0]]
+                return normal_appointment
+
+
+    def priority_booking(self,selected_id,selected_service,problem_description):    
+            selected_date = datetime.now().date().strftime("%Y-%m-%d")
+            selected_time = datetime.now().time()
+    
+            result = self.doctor_s.get_doctors_from_service(selected_service)
+
+            # there'll always be doctors for a service in hospital
+            if(not result['success']): 
+                return result
+    
+            doctors_data,doctor_ids,doctors_choices = result['data']
+    
+            doctors_slot = {id : self.doc_sched_s.get_doctor_slots(id,selected_date) for id in doctor_ids}
+            # print(doctors_slot,"\n")
+    
+            doctors_free_slot = {id: self.get_doctors_free_slots(doctors_slot[id],id,selected_date)[0] for id in doctors_slot.keys()}
+            # print(doctors_free_slot,"\n")
+    
+            earliest_slot_is_free = {}  # id: [slot, 0/1]
+            for id, slots in doctors_slot.items():
+                for slot in slots:
+                    start_time = datetime.strptime(slot[0],"%H:%M").time()
+                    if start_time > selected_time:
+                        earliest_slot_is_free[id] = [slot, slot in doctors_free_slot[id]]
+                        break
+    
+            # print(earliest_slot_is_free,"\n")
+    
+            earliest_free_doctor = []
+            for id,slot in earliest_slot_is_free.items():
+                if slot[1]:
+                    earliest_free_doctor = [id,slot[0]]
+                    break
+            # print(earliest_free_doctor)
+    
+            selected_doctor,selected_slot = None,None
+            reschedule_message = None
+
+            if len(earliest_free_doctor)==0:
+                result = self.check_for_reschedule(selected_date,earliest_slot_is_free)
+                if result is None:
+                    return {'success':False,'message':"No doctors available currently. All doctors are operating emergency patient."}
+                reschedule_message = result['message']
+                selected_doctor = result['data'][0]
+                selected_slot = result['data'][1]
+            else:
+                selected_doctor = earliest_free_doctor[0]
+                selected_slot = earliest_free_doctor[1]
+    
+            appointment_cost = doctors_data[selected_doctor][1]
+    
+            appointment_obj = AppointmentsModel(None,selected_id,selected_doctor,selected_date,selected_slot[0],selected_slot[1],"BOOKED",1,appointment_cost,problem_description)
+            
+            result = self.book_appointment(appointment_obj)
         
+            if result['success']:
+                result['reschedule_message'] = reschedule_message
+                result['message'] = (f"""Your Appointment ID is {result['data']}.
+         Please remember this id for future reference.
+         
+     Your Appointment Details:
+     Doctor ID: {selected_doctor}
+     Doctor Name: {doctors_data[selected_doctor][0]}
+     Slot: {selected_slot[0]} - {selected_slot[1]}
+     Appointment Cost: {appointment_cost}""")
+            return result

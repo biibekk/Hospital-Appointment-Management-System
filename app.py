@@ -26,7 +26,7 @@ patient_r = PatientRepo(connection)
 doctor_s = DoctorService(doctor_r)
 doctorschedule_s = DoctorScheduleService(doctorschedule_r,doctor_r)
 patient_s = PatientService(patient_r)
-appointment_s = AppointmentsService(appointment_r,doctor_r,doctorschedule_r,doctorschedule_s)
+appointment_s = AppointmentsService(appointment_r,doctor_r,doctorschedule_r,doctorschedule_s,doctor_s)
 
 patient = PatientMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
 admin = HospitalAdminMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
@@ -55,5 +55,5 @@ def main():
 main()
 
 # doctorschedule_r.delete_schedule()
-# appointment_r.delete()
+# appointment_r.delete_appointment()
 # appointment_r.check_unique()
