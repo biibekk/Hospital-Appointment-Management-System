@@ -7,7 +7,7 @@ from services.doctorschedule_service import DoctorScheduleService
 from services.patient_service import PatientService
 
 from models.doctor_model import DoctorModel
-from models.doctorschedule_model import DoctorSchedule
+from models.doctorschedule_model import DoctorScheduleModel
 
 from helpers.display_help import display
 from helpers.validators import Validators
@@ -50,7 +50,7 @@ class HospitalAdminMenu:
         start_time = Validators.get_time("Enter start time(24 Hour - HH:MM): ")
         end_time = Validators.get_time("Enter end time(24 Hour - HH:MM): ")
 
-        new_doctor_schedule = DoctorSchedule(doctor_id,date,start_time,end_time)
+        new_doctor_schedule = DoctorScheduleModel(None,doctor_id,date,start_time,end_time)
         result = self.doctorschedule_s.add_doctor_schedule(new_doctor_schedule)
         display(result['message'])
         

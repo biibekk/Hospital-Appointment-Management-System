@@ -6,7 +6,7 @@ class PatientRepo:
         self.cursor = connection.cursor()
 
     def patient_exists(self,patient):
-        query = "select * from patient where id = ?"
+        query = "select * from patient where patient_id = ?"
         args = (patient.patient_id,)
 
         if patient.patient_id is None:

@@ -12,7 +12,7 @@ class DoctorScheduleService:
 
     def add_doctor_schedule(self,schedule):
         try:
-            doctor = DoctorModel(None,None,None,None,schedule.doctor_id)
+            doctor = DoctorModel(schedule.doctor_id,None,None,None,None)
             if not self.doctor_repo.doctor_exists(doctor):
                 return {'success':False,'message':"Doctor Not Found."}
 

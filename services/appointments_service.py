@@ -103,7 +103,7 @@ class AppointmentsService:
 
     def get_doctor_appointments_today(self,doctor_id,date):
         try:
-            doctor = DoctorModel(None,None,None,None,doctor_id)
+            doctor = DoctorModel(doctor_id,None,None,None,None)
             if not self.doctor_repo.doctor_exists(doctor):
                 return {'success':False,'message':f"Doctor with ID {doctor_id} not found."}
             

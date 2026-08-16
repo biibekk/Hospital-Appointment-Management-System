@@ -5,8 +5,6 @@ from services.doctor_service import DoctorService
 from services.doctorschedule_service import DoctorScheduleService
 from services.patient_service import PatientService
 
-from models.doctor_model import DoctorModel
-from models.doctorschedule_model import DoctorSchedule
 
 from helpers.display_help import display
 from helpers.validators import Validators

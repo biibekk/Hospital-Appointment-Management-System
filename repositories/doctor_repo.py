@@ -5,6 +5,7 @@ class DoctorRepo:
         self.connection = connection
         self.cursor = connection.cursor()
 
+
     def doctor_exists(self,doctor):
         query = "select * from doctor where doctor_id = ?"
         args = (doctor.doctor_id,)
@@ -17,6 +18,7 @@ class DoctorRepo:
         row =  self.cursor.fetchone()
         return None if row is None else DoctorModel(*row)
 
+
     def add_doctor(self,doctor):
         query = """insert into doctor(name,contact,specialisation,consultation_fee) 
         values(?,?,?,?)"""
@@ -25,6 +27,7 @@ class DoctorRepo:
             self.cursor.execute(query,(doctor.name,doctor.contact,doctor.specialisation,doctor.consultation_fee))
 
         return self.cursor.rowcount
+
 
     def get_doctors_from_service(self,service):
         query = """select doctor_id,name,consultation_fee from doctor
