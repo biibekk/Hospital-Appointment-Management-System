@@ -71,6 +71,10 @@ class PatientMenu():
     def book_appointment(self):
         # get patient id, for now - need to work on registration
         selected_pid = Validators.get_int(Prompts.patient_id)
+        result = self.patient_s.patient_exists(PatientModel(selected_pid,None,None,None,None))
+        if not result['success']:
+            display(result['message'])
+            return
 
         # priority selection
         selected_priority = Validators.get_choice(Prompts.priority,1,2)
@@ -178,13 +182,17 @@ class PatientMenu():
 
 
     def view_appointment_history(self):
-        selected_patient_id = Validators.get_int("\nEnter Patient ID: ")
-
-        result = self.appointment_s.view_appointment_history(selected_patient_id)
+        selected_pid = Validators.get_int("\nEnter Patient ID: ")
+        result = self.patient_s.patient_exists(PatientModel(selected_pid,None,None,None,None))
         if not result['success']:
             display(result['message'])
             return
-        display(f"Appointments History of Patient {selected_patient_id}")
+
+        result = self.appointment_s.view_appointment_history(selected_pid)
+        if not result['success']:
+            display(result['message'])
+            return
+        display(f"Appointments History of Patient {selected_pid}")
         result['data'][0].display_header()    # header for table display from AppointmentsModel
         for appointment in result['data']:
             print(appointment)

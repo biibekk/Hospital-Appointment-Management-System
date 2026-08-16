@@ -12,7 +12,7 @@ class PatientService:
             result = self.patient_repo.patient_exists(patient)
 
             if result is None:
-                return {'success': False,'message': "Patient Not Found"}
+                return {'success': False,'message': f"Patient with id {patient.patient_id} Not Found"}
             return {'success': True,'message': f"Patient Account Already exists with ID {result}"}
         except sqlite3.Error as e:
             dblogger.error(f"Database error: {e}")

@@ -100,7 +100,3 @@ class AppointmentsRepo:
 
         row = self.cursor.fetchone()
         return None if row is None else AppointmentsModel(*row)
-
-    def delete_appointment(self):
-        with self.connection:
-            self.cursor.execute("delete from appointments where appointment_id = 24")
