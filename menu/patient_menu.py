@@ -79,31 +79,27 @@ class PatientMenu():
         doctors_data,doctor_ids,doctors_choices = result['data']
 
         doctors_slot = {id : self.doctorschedule_s.get_doctor_slots(id,selected_date) for id in doctor_ids}
-        print(doctors_slot,"\n")
+        # print(doctors_slot,"\n")
 
         doctors_free_slot = {id: self.appointment_s.get_doctors_free_slots(doctors_slot[id],id,selected_date)[0] for id in doctors_slot.keys()}
-        print(doctors_free_slot,"\n")
+        # print(doctors_free_slot,"\n")
 
         earliest_slot_is_free = {}  # id: [slot, 0/1]
         for id, slots in doctors_slot.items():
             for slot in slots:
                 start_time = datetime.strptime(slot[0],"%H:%M").time()
                 if start_time > selected_time:
-                    # if id not in earliest_slot_is_free:
                     earliest_slot_is_free[id] = [slot, slot in doctors_free_slot[id]]
-                    # else: earliest_slot_is_free[id].append([slot, slot in doctors_free_slot[id]])
                     break
 
-        print(earliest_slot_is_free,"\n")
+        # print(earliest_slot_is_free,"\n")
 
         earliest_free_doctor = []
         for id,slot in earliest_slot_is_free.items():
             if slot[1]:
                 earliest_free_doctor = [id,slot[0]]
                 break
-
-
-        print(earliest_free_doctor)
+        # print(earliest_free_doctor)
 
         problem_description = Validators.get_problem_description(Prompts.problem_description)
 
@@ -137,17 +133,18 @@ class PatientMenu():
 
     def book_appointment(self):
         # get patient id, for now - need to work on registration
-        selected_id = Validators.get_int(Prompts.patient_id)
+        selected_pid = Validators.get_int(Prompts.patient_id)
 
         # priority selection
         selected_priority = Validators.get_choice(Prompts.priority,1,2)
 
         if selected_priority == 1:
-            return self.priority_booking(selected_id)
+            return self.priority_booking(selected_pid)
 
         # select hospital service
         selected_service_number = Validators.get_choice(service_prompt,1,max_choice)
-        if selected_service_number == max_choice: return
+        if selected_service_number == max_choice: 
+            return
         selected_service = hospital_services[selected_service_number]
 
         result = self.doctor_s.get_doctors_from_service(selected_service)
@@ -161,13 +158,10 @@ class PatientMenu():
         selected_doctor = Validators.get_choice_from_list(Prompts.doctor.format(doctors = doctors_choices),doctor_ids,"doctor")
         appointment_cost = doctors_data[selected_doctor][1]
 
-
         # date selection
         selected_date = Validators.get_future_date(Prompts.date)
 
         # SLOT selection
-        # all day slots(schedule) - booked slots(appointments)
-
         free_slots,slot_choices = self.get_doctors_free_slots(selected_doctor,selected_date)
         max_slot_choice = len(free_slots)
 
@@ -181,7 +175,7 @@ class PatientMenu():
         # problem description selection:
         problem_desc = Validators.get_problem_description(Prompts.problem_description)
 
-        appointment_obj = AppointmentsModel(None,selected_id,selected_doctor,selected_date,selected_slot[0],selected_slot[1],"BOOKED",selected_priority,appointment_cost,problem_desc)
+        appointment_obj = AppointmentsModel(None,selected_pid,selected_doctor,selected_date,selected_slot[0],selected_slot[1],"BOOKED",selected_priority,appointment_cost,problem_desc)
 
         res = self.appointment_s.book_appointment(appointment_obj)
         display(res['message'])

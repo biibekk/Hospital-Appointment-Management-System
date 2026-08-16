@@ -1,5 +1,5 @@
 class DoctorModel:
-    def __init__(self,name,contact,specialisation,fee,doctor_id=None):
+    def __init__(self,doctor_id,name,contact,specialisation,fee):
         self.doctor_id = doctor_id
         self.name = name
         self.contact = contact

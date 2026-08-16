@@ -1,3 +1,5 @@
+from models.doctor_model import DoctorModel
+
 class DoctorRepo:
     def __init__(self,connection):
         self.connection = connection
@@ -12,9 +14,9 @@ class DoctorRepo:
             args = (doctor.name,doctor.contact)
 
         self.cursor.execute(query,args)
-        
-        # use doctor model here
-        return self.cursor.fetchone()
+        row =  self.cursor.fetchone()
+
+        return None if row is None else DoctorModel(*row)
 
     def add_doctor(self,doctor):
         query = """insert into doctor(name,contact,specialisation,consultation_fee) 

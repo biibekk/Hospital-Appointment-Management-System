@@ -50,5 +50,4 @@ create table if not exists appointments(
 );
 
 create unique index if not exists unique_active_appointment
-on appointments(doctor_id, date, start_time)
-where status != 'CANCELLED';
+on appointments(doctor_id, date, start_time);

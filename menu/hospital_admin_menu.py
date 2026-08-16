@@ -37,7 +37,7 @@ class HospitalAdminMenu:
         spec = Validators.get_non_empty_string("Enter specialisation: ")
         fee = Validators.get_int("Enter consultation fee: ")
 
-        new_doctor = DoctorModel(name,contact,spec,fee)
+        new_doctor = DoctorModel(None,name,contact,spec,fee)
         result = self.doctor_s.add_doctor(new_doctor)
         display(result['message'])
 

@@ -31,31 +31,34 @@ class DoctorScheduleService:
 
     def get_doctor_slots(self,doctor_id,date):
         # the id received here is valid so do i need to check again if doctor id exists
+        try: 
+            result = self.schedule_repo.get_doctor_slots(doctor_id,date)
+            selected_date = datetime.strptime(date,"%Y-%m-%d").date()
+            slots = []
+            today_date = datetime.now().date()
+            current_time = datetime.now()
+            
+            for id,st,et,sd in result:
+                start_time = datetime.strptime(st,"%H:%M").time()   # gives 1901 as dummy date
+                end_time = datetime.strptime(et,"%H:%M").time()
 
-        result = self.schedule_repo.get_doctor_slots(doctor_id,date)
-        selected_date = datetime.strptime(date,"%Y-%m-%d").date()
-        slots = []
-        today_date = datetime.now().date()
-        current_time = datetime.now()
-        
-        for id,st,et,sd in result:
-            start_time = datetime.strptime(st,"%H:%M").time()   # gives 1901 as dummy date
-            end_time = datetime.strptime(et,"%H:%M").time()
-
-            # add selected date to time
-            start_time = datetime.combine(selected_date, start_time)
-            end_time = datetime.combine(selected_date,end_time)
-            slot_duration = int(sd)
-            duration = timedelta(minutes=slot_duration)
-            current = start_time
-            while current + duration <= end_time:
-                if selected_date == today_date and current <= current_time:
+                # add selected date to time
+                start_time = datetime.combine(selected_date, start_time)
+                end_time = datetime.combine(selected_date,end_time)
+                slot_duration = int(sd)
+                duration = timedelta(minutes=slot_duration)
+                current = start_time
+                while current + duration <= end_time:
+                    if selected_date == today_date and current <= current_time:
+                        current += duration
+                        continue
+                    slots.append((
+                        current.strftime("%H:%M"),
+                        (current+duration).strftime("%H:%M")
+                    ))
                     current += duration
-                    continue
-                slots.append((
-                    current.strftime("%H:%M"),
-                    (current+duration).strftime("%H:%M")
-                ))
-                current += duration
 
-        return slots
+            return slots
+        except sqlite3.Error as e:
+            dblogger.error(f"Database error: {e}")
+            return {'success': False,'message': "Unable to get doctor slots. Please try again."}

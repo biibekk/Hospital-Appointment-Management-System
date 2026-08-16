@@ -1,6 +1,3 @@
-from datetime import datetime,date
-import re
-
 from database.dbconnection import DatabaseConnection
 
 from services.appointments_service import AppointmentsService
@@ -12,11 +9,6 @@ from repositories.appointments_repo import AppointmentsRepo
 from repositories.doctor_repo import DoctorRepo
 from repositories.doctorschedule_repo import DoctorScheduleRepo
 from repositories.patient_repo import PatientRepo
-
-from models.patient_model import PatientModel
-from models.doctor_model import DoctorModel
-from models.doctorschedule_model import DoctorSchedule
-from models.appointments_model import AppointmentsModel
 
 from helpers.display_help import display
 from menu.patient_menu import PatientMenu
@@ -44,11 +36,6 @@ from helpers.prompts import Prompts
 from helpers.validators import Validators
 
 
-# CHECKING SQL ERROR CATCH AND LOGGING METHOD
-# print(doctor_r.add_error_check(1,"demo",1234,"demo",1000))     this is bypassing the service with direct call to repo
-# response = doctor_s.add_error_check(1,"demo",1234,"demo",1000)
-# display(response['message'])
-
 def main():
     user_input = Validators.get_non_empty_string(Prompts.menu_prompt)
 
@@ -70,4 +57,3 @@ main()
 # doctorschedule_r.delete_schedule()
 # appointment_r.delete()
 # appointment_r.check_unique()
-# UNIQUE constraint failed: appointments.doctor_id, appointments.date, appointments.start_time
