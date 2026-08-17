@@ -33,6 +33,7 @@ class HospitalAdminMenu:
         name = Validators.get_non_empty_string("Enter your name: ")
         contact = Validators.get_contact("Enter contact no: ",10)
         spec = Validators.get_non_empty_string("Enter specialisation: ")
+        spec = spec.title()
         fee = Validators.get_int("Enter consultation fee: ")
 
         new_doctor = DoctorModel(None,name,contact,spec,fee)

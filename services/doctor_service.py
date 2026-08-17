@@ -34,6 +34,8 @@ class DoctorService:
     def get_doctors_from_service(self,service):
         try:
             result = self.doctor_repo.get_doctors_from_service(service)
+            if len(result)==0:
+                return ({'success':False, 'message':f"No doctor added to {service} service."})
             # if there's a service, there'll be doctors so result can't be empty
 
             doctors_data = {t[0]:(t[1],t[2]) for t in result}

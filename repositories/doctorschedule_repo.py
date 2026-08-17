@@ -5,14 +5,13 @@ class DoctorScheduleRepo:
 
 
     def doctor_schedule_exists(self,schedule):
-        query = """select * from doctorschedule
-        where doctor_id = ? and date = ? and start_time = ?"""
-        args = (schedule.doctor_id,schedule.date,schedule.start_time)
+        query = """select 1 from doctorschedule
+        where doctor_id = ? and date = ? and start_time < ? and end_time > ?"""
+        args = (schedule.doctor_id,schedule.date,schedule.start_time,schedule.end_time)
 
         self.cursor.execute(query,args)
 
-        row =  self.cursor.fetchone()
-        return None if row is None else row[0]
+        return self.cursor.fetchone() is not None
 
 
     def add_doctor_schedule(self,schedule):

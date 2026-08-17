@@ -36,24 +36,18 @@ from helpers.prompts import Prompts
 from helpers.validators import Validators
 
 
-def main():
-    user_input = Validators.get_non_empty_string(Prompts.menu_prompt)
 
-    while user_input != '4':
-        if user_input == '1':
-            admin.hospital_admin_menu()
-        elif user_input == '2':
-            doctor.doctor_menu()
-        elif user_input == '3':
-            patient.patient_menu()
-        elif user_input == '4':
-            break
-        else:
-            display("Please enter a valid input.")
-        user_input = input(Prompts.menu_prompt)
+user_input = Validators.get_non_empty_string(Prompts.menu_prompt)
 
-main()
-
-# doctorschedule_r.delete_schedule()
-# appointment_r.delete_appointment()
-# appointment_r.check_unique()
+while user_input != '4':
+    if user_input == '1':
+        admin.hospital_admin_menu()
+    elif user_input == '2':
+        doctor.doctor_menu()
+    elif user_input == '3':
+        patient.patient_menu()
+    elif user_input == '4':
+        break
+    else:
+        display("Please enter a valid input.")
+    user_input = input(Prompts.menu_prompt)

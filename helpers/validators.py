@@ -4,6 +4,7 @@ import re
 from helpers.display_help import display
 
 class Validators:
+    @staticmethod
     def get_int(prompt, error_message = "Invalid input! Please enter a whole number."):
         while True:
             try:
@@ -11,6 +12,8 @@ class Validators:
             except ValueError:
                 display(f"Error: {error_message}")
 
+
+    @staticmethod
     def get_choice(prompt,min_val,max_val):
         while True:
             value = Validators.get_int(prompt)
@@ -20,6 +23,7 @@ class Validators:
 
             display(f"Error: Please enter a number between {min_val} and {max_val}.")
 
+    @staticmethod
     def get_choice_from_list(prompt,list_options,field_name):
          while True:
             try:
@@ -33,6 +37,7 @@ class Validators:
             except ValueError:
                 display("Error: Invalid input! Please enter a whole number")
 
+    @staticmethod
     def get_future_date(prompt):
         while True:
             date_input = input(prompt).strip()
@@ -48,6 +53,7 @@ class Validators:
             except ValueError:
                 display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.")
 
+    @staticmethod
     def get_past_date(prompt):
             while True:
                 date_input = input(prompt).strip()
@@ -63,6 +69,7 @@ class Validators:
                 except ValueError:
                     display("Error: Invalid date format or non-existent date! Please use YYYY-MM-DD.")
 
+    @staticmethod
     def get_non_empty_string(prompt):
         while True:
             value = input(prompt).strip()
@@ -73,6 +80,7 @@ class Validators:
 
             return value
 
+    @staticmethod
     def get_problem_description(prompt):
         while True:
             value = input(prompt).strip()
@@ -91,6 +99,7 @@ class Validators:
 
             return value
 
+    @staticmethod
     def get_single_charater(prompt,chars):
         while True:
             value = input(prompt).strip()
@@ -109,7 +118,8 @@ class Validators:
                 continue
 
             return value
-        
+
+    @staticmethod
     def get_contact(prompt,length):
         while True:
             value = input(prompt).strip()
@@ -126,6 +136,7 @@ class Validators:
                 continue
             return value
 
+    @staticmethod
     def get_time(prompt):
         while True:
             value = input(prompt)

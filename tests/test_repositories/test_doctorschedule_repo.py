@@ -12,13 +12,12 @@ class TestDoctorScheduleRepo(TestCase):
 
     def test_doctor_schedule_exists(self):
         schedule = DoctorScheduleModel(1,2,"2026-08-15","10:00","14:00",30)
-        self.doc_sched.cursor.fetchone.return_value = (1,2,"2026-08-15","10:00","14:00",30)
-
+        self.doc_sched.cursor.fetchone.return_value = True
         result = self.doc_sched.doctor_schedule_exists(schedule)
 
-        self.doc_sched.cursor.execute.assert_called_once_with("""select * from doctorschedule
-        where doctor_id = ? and date = ? and start_time = ?""",(schedule.doctor_id,schedule.date,schedule.start_time))
-        self.assertEqual(result,1)
+        self.doc_sched.cursor.execute.assert_called_once_with("""select 1 from doctorschedule
+        where doctor_id = ? and date = ? and start_time < ? and end_time > ?""",(schedule.doctor_id,schedule.date,schedule.start_time))
+        self.assertEqual(result,True)
 
     def test_doctor_schedule_exists_false(self):
         schedule = DoctorScheduleModel(1,2,"2026-08-20","10:00","10:30")
@@ -26,7 +25,7 @@ class TestDoctorScheduleRepo(TestCase):
 
         result = self.doc_sched.doctor_schedule_exists(schedule)
 
-        self.assertIsNone(result)
+        self.assertEqual(result,False)
 
     def test_add_doctor_schedule(self):
         schedule = DoctorScheduleModel(1,2,"2026-08-15","10:00","14:00",30)

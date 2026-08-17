@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from services.appointments_service import AppointmentsService
 from services.doctor_service import DoctorService
 from services.doctorschedule_service import DoctorScheduleService
@@ -13,7 +11,7 @@ from helpers.prompts import Prompts
 from helpers.validators import Validators
 
 
-hospital_services = {1:'General Physician', 2:'Dermatology', 3:'Cardiology', 4:'Orthopedics', 5:'Pediatrics', 6:'Surgeon'}
+hospital_services = {1:'Physician', 2:'Dermatology', 3:'Cardiology', 4:'Orthopedics', 5:'Dental', 6:'Surgeon'}
 hostpital_services_list = "\n".join([f"{key}. {val}" for key,val in hospital_services.items()])
 max_choice = len(hospital_services) + 1
 
@@ -35,7 +33,7 @@ class PatientMenu():
     def register_patient(self):
         display("Patient Registration")
         name = Validators.get_non_empty_string("Enter your name: ")
-        dob = Validators.get_past_date("Enter your DOB(yyyy/mm/dd): ")
+        dob = Validators.get_past_date("Enter your DOB(yyyy-mm-dd): ")
         gender = Validators.get_single_charater("Enter your gender(M/F): ", ('M','F'))
         contact = Validators.get_contact("Enter your contact no: ",10)
 

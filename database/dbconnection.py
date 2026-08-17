@@ -14,5 +14,4 @@ class DatabaseConnection:
         if self._initialized:
             return
         self.connection=sqlite3.connect(host)
-
         self._initialized=True
