@@ -1,3 +1,4 @@
+# python3 -m unittest tests/test_repositories/test_appointments_repo.py
 from unittest import TestCase
 from unittest.mock import MagicMock
 
@@ -20,6 +21,28 @@ class TestAppointmentsRepo(TestCase):
         self.assertEqual(result,[("10:00","10:30"),("11:00","11:30")])
         self.appointment.cursor.execute.assert_called_once_with("""select start_time,end_time from appointments
         where doctor_id = ? and date = ?""",(doctor_id, date))
+
+    def test_check_patient_appointment_overlap_found(self):
+        appointment = AppointmentsModel(1,1,2,"2026-08-16","10:00","10:30","BOOKED",2,500,"cold and fever")
+        self.appointment.cursor.fetchone.return_value = (1,1,2,"2026-08-16","10:00","10:30","BOOKED",2,500,"cold and fever")
+        args = (appointment.patient_id,appointment.date,appointment.end_time,appointment.start_time)
+
+        result = self.appointment.check_patient_appointment_overlap(appointment)
+
+        self.assertIsInstance(result,AppointmentsModel)
+        self.appointment.cursor.execute.assert_called_once_with("""select * from appointments
+        where patient_id = ? and date = ? and start_time < ? and end_time > ?""",args)
+
+    def test_check_patient_appointment_overlap_not_found(self):
+        appointment = AppointmentsModel(1,1,2,"2026-08-16","10:00","10:30","BOOKED",2,500,"cold and fever")
+        self.appointment.cursor.fetchone.return_value = None
+        args = (appointment.patient_id,appointment.date,appointment.end_time,appointment.start_time)
+
+        result = self.appointment.check_patient_appointment_overlap(appointment)
+
+        self.assertIsNone(result)
+        self.appointment.cursor.execute.assert_called_once_with("""select * from appointments
+        where patient_id = ? and date = ? and start_time < ? and end_time > ?""",args)
 
 
     def test_book_appointment(self):

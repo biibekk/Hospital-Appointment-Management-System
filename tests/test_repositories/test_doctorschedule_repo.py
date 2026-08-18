@@ -13,10 +13,12 @@ class TestDoctorScheduleRepo(TestCase):
     def test_doctor_schedule_exists(self):
         schedule = DoctorScheduleModel(1,2,"2026-08-15","10:00","14:00",30)
         self.doc_sched.cursor.fetchone.return_value = True
+        args = (schedule.doctor_id,schedule.date,schedule.end_time,schedule.start_time)
+
         result = self.doc_sched.doctor_schedule_exists(schedule)
 
         self.doc_sched.cursor.execute.assert_called_once_with("""select 1 from doctorschedule
-        where doctor_id = ? and date = ? and start_time < ? and end_time > ?""",(schedule.doctor_id,schedule.date,schedule.start_time))
+        where doctor_id = ? and date = ? and start_time < ? and end_time > ?""",args)
         self.assertEqual(result,True)
 
     def test_doctor_schedule_exists_false(self):
