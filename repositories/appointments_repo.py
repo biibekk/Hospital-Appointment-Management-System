@@ -15,6 +15,16 @@ class AppointmentsRepo:
 
         return self.cursor.fetchall()
 
+    def check_patient_appointment_overlap(self,appointment):
+        query = """select * from appointments
+        where patient_id = ? and date = ? and start_time < ? and end_time > ?"""
+
+        with self.connection:
+            self.cursor.execute(query,(appointment.patient_id,appointment.date,appointment.end_time,appointment.start_time))
+
+        row = self.cursor.fetchone()
+        return None if row is None else AppointmentsModel(*row)
+    
 
     def book_appointment(self,appo):
         query = """insert into appointments(patient_id,doctor_id,date,start_time,end_time,status,priority,appointment_cost,problem_description)

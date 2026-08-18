@@ -121,6 +121,10 @@ class PatientMenu():
         if res['success']:
             display(f"""Your Appointment ID is {res['data']}.
      Please remember this id for future reference.""")
+        elif 'data' in res:
+            display("Existing appointment details.")
+            res['data'].display_header()
+            print(res['data'])
 
 
     def cancel_appointment(self):

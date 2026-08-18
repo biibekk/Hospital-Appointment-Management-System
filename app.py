@@ -26,7 +26,7 @@ patient_r = PatientRepo(connection)
 doctor_s = DoctorService(doctor_r)
 doctorschedule_s = DoctorScheduleService(doctorschedule_r,doctor_r)
 patient_s = PatientService(patient_r)
-appointment_s = AppointmentsService(appointment_r,doctor_r,doctorschedule_r,doctorschedule_s,doctor_s)
+appointment_s = AppointmentsService(appointment_r,doctor_r,doctorschedule_s,doctor_s)
 
 patient = PatientMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
 admin = HospitalAdminMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
@@ -34,8 +34,6 @@ doctor = DoctorMenu(appointment_s,doctor_s,doctorschedule_s,patient_s)
 
 from helpers.prompts import Prompts
 from helpers.validators import Validators
-
-
 
 user_input = Validators.get_non_empty_string(Prompts.menu_prompt)
 

@@ -7,7 +7,7 @@ class DoctorScheduleRepo:
     def doctor_schedule_exists(self,schedule):
         query = """select 1 from doctorschedule
         where doctor_id = ? and date = ? and start_time < ? and end_time > ?"""
-        args = (schedule.doctor_id,schedule.date,schedule.start_time,schedule.end_time)
+        args = (schedule.doctor_id,schedule.date,schedule.end_time,schedule.start_time)
 
         self.cursor.execute(query,args)
 

@@ -4,7 +4,6 @@ from helpers.logger import dblogger
 
 from repositories.appointments_repo import AppointmentsRepo
 from repositories.doctor_repo import DoctorRepo
-from repositories.doctorschedule_repo import DoctorScheduleRepo
 
 from services.doctorschedule_service import DoctorScheduleService
 from services.doctor_service import DoctorService
@@ -13,11 +12,10 @@ from models.doctor_model import DoctorModel
 from models.appointments_model import AppointmentsModel
 
 class AppointmentsService:
-    def __init__(self,appointment_repo :AppointmentsRepo,doctor_repo: DoctorRepo, doc_sched_repo: DoctorScheduleRepo,
+    def __init__(self,appointment_repo :AppointmentsRepo,doctor_repo: DoctorRepo,
                 doc_sched_service: DoctorScheduleService, doctor_s: DoctorService):
         self.appo_repo = appointment_repo
         self.doctor_repo = doctor_repo
-        self.doc_sched_repo = doc_sched_repo
         self.doc_sched_s = doc_sched_service
         self.doctor_s = doctor_s
 
@@ -51,6 +49,10 @@ class AppointmentsService:
 
     def book_appointment(self,appointment):
         try:
+            appointment_overlap = self.appo_repo.check_patient_appointment_overlap(appointment)
+            if appointment_overlap is not None:
+                return {'success': False,'message': "Another appointment exists for same time.",'data': appointment_overlap}
+
             result = self.appo_repo.book_appointment(appointment)
             return {'success':True,'message':"Appointment Booked Successfully.",'data':result}
         except sqlite3.Error as e:
