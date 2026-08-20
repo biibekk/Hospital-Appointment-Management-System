@@ -23,14 +23,11 @@ class DoctorScheduleService:
 
             if(res==1):
                 return {'success':True,'message':"Doctor Schedule Added Successfully."}
-            else:
-                return {'success':False,'message':"Doctor Schedule Addition Failed."}
         except sqlite3.Error as e:
             dblogger.error(f"Database error: {e}")
             return {'success': False,'message': "Unable to add doctor schedule. Please try again."}
 
     def get_doctor_slots(self,doctor_id,date):
-        # the id received here is valid so do i need to check again if doctor id exists
         try: 
             result = self.schedule_repo.get_doctor_slots(doctor_id,date)
             selected_date = datetime.strptime(date,"%Y-%m-%d").date()
