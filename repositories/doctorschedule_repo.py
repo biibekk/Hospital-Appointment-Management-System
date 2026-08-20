@@ -35,8 +35,7 @@ class DoctorScheduleRepo:
 
 
     def get_doctor_schedule(self,doctor_id):
-        query = """
-        select * from doctorschedule where doctor_id = ?"""
+        query = """select * from doctorschedule where doctor_id = ?"""
         with self.connection:
             self.cursor.execute(query,(doctor_id,))
 

@@ -24,9 +24,12 @@ class TestDoctorScheduleRepo(TestCase):
     def test_doctor_schedule_exists_false(self):
         schedule = DoctorScheduleModel(1,2,"2026-08-20","10:00","10:30")
         self.doc_sched.cursor.fetchone.return_value = None
+        args = (schedule.doctor_id,schedule.date,schedule.end_time,schedule.start_time)
 
         result = self.doc_sched.doctor_schedule_exists(schedule)
 
+        self.doc_sched.cursor.execute.assert_called_once_with("""select 1 from doctorschedule
+        where doctor_id = ? and date = ? and start_time < ? and end_time > ?""",args)
         self.assertEqual(result,False)
 
     def test_add_doctor_schedule(self):
@@ -49,3 +52,12 @@ class TestDoctorScheduleRepo(TestCase):
         self.doc_sched.cursor.execute.assert_called_once_with("""select schedule_id,start_time,end_time,slot_duration from doctorschedule 
         where doctor_id = ? and date = ?""",(doctor_id,date))
         self.assertEqual(result,[(1,"10:00","13:00",30),(2,"09:00","14:00",30)])
+
+    def test_get_doctor_schedule(self):
+        doctor_id = 1
+        self.doc_sched.cursor.fetchall.return_value = [(1, 2, "2026-08-15", "10:00", "14:00", 30)]
+
+        result = self.doc_sched.get_doctor_schedule(doctor_id)
+
+        self.doc_sched.cursor.execute.assert_called_once_with("""select * from doctorschedule where doctor_id = ?""",(doctor_id,))
+        self.assertEqual(result,[(1, 2, "2026-08-15", "10:00", "14:00", 30)])

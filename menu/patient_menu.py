@@ -65,7 +65,6 @@ class PatientMenu():
         display(result['message'])
 
         
-
     def book_appointment(self):
         # get patient id, for now - need to work on registration
         selected_pid = Validators.get_int(Prompts.patient_id)

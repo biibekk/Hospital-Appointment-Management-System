@@ -55,7 +55,7 @@ class HospitalAdminMenu:
         
     def hospital_admin_menu(self):
         admin_input = input(admin_prompt)
-        while admin_input != '5':
+        while admin_input != '3':
             if admin_input == '1':
                 self.add_doctor()
             elif admin_input == '2':

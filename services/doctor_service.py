@@ -23,14 +23,6 @@ class DoctorService:
             return {'success': False,'message': "Unable to add doctor schedule. Please try again."}
 
 
-    def add_error_check(self,*args):
-        try:
-            self.doctor_repo.add_error_check(*args)
-        except sqlite3.Error as e:
-            dblogger.error(f"Database error: {e}")
-            return {'success': False,'message': "Unable to add doctor schedule. Please try again."}
-
-
     def get_doctors_from_service(self,service):
         try:
             result = self.doctor_repo.get_doctors_from_service(service)

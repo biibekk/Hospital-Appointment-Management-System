@@ -26,13 +26,11 @@ class PatientService:
                 patient_id = self.patient_repo.register_patient(patient)
                 if(patient_id):
                     return {'success':True,'message':"Patient Registration Successfully.",'data':patient_id}
-                else:
-                    return {'success':False,'message':"Patient Registration Failed."}
             else:
                 return {'success':False,'message':result['message']}
         except sqlite3.Error as e:
             dblogger.error(f"Database error: {e}")
-            return {'success': False,'message': "Unable to add doctor schedule. Please try again."}
+            return {'success': False,'message': "Unable to register patient. Please try again."}
 
     def get_patient_info(self,patient_id):
         try:
@@ -44,4 +42,3 @@ class PatientService:
         except sqlite3.Error as e:
             dblogger.error(f"Database error: {e}")
             return {'success': False,'message': "Unable to fetch patient information. Please try again."}
-        

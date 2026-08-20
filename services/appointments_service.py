@@ -96,7 +96,6 @@ class AppointmentsService:
 
 
     def view_appointment_history(self,patient_id):
-        # patient registers and i have his id which is passed here so no need to verify if patient exists
         try:
             all_appointments = self.appo_repo.view_appointment_history(patient_id)
 
